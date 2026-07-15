@@ -277,6 +277,13 @@
                         if (data) {
                             this.surah = data;
                             this.ayahs = data.ayahs || [];
+                            localStorage.setItem(`quran_surah_${surahNumber}`, JSON.stringify({
+                                name_latin: data.name_latin,
+                                name: data.name,
+                                translation: data.translation,
+                                number_of_ayahs: data.number_of_ayahs,
+                                ayahs: data.ayahs
+                            }));
                         }
                     } catch (error) {
                         console.error('Error loading surah:', error);
