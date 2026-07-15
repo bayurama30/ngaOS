@@ -105,7 +105,7 @@
                     </button>
                     <div>
                         <p class="font-medium text-gray-800">Audio Murottal</p>
-                        <p class="text-sm text-gray-500">Muhammad Thaha</p>
+                        <p class="text-sm text-gray-500">Word-by-Word Sync</p>
                         <p x-show="currentPlayingAyah >= 0" class="text-xs text-amber-600 mt-0.5">
                             Sedang memutar: Ayat <span x-text="ayahs[currentPlayingAyah]?.ayah_number"></span>
                         </p>
@@ -242,6 +242,7 @@
                 highlightedWordIndex: -1,
                 currentAudio: null,
                 stopRequested: false,
+                wordDataCache: {},
 
                 init() {
                     this.loadSettings();
@@ -354,6 +355,40 @@
                     return new Promise(resolve => setTimeout(resolve, ms));
                 },
 
+                async fetchWordData(surah, ayah) {
+                    const cacheKey = `quran_words_${surah}_${ayah}`;
+                    
+                    if (this.wordDataCache[cacheKey]) {
+                        return this.wordDataCache[cacheKey];
+                    }
+
+                    const cached = localStorage.getItem(cacheKey);
+                    if (cached) {
+                        try {
+                            const data = JSON.parse(cached);
+                            this.wordDataCache[cacheKey] = data;
+                            return data;
+                        } catch (e) {}
+                    }
+
+                    try {
+                        const response = await fetch(`https://api.quran.com/api/v4/verses/by_chapter/${surah}?words=true&fields=text_uthmani`);
+                        const data = await response.json();
+                        
+                        const verse = data.verses?.find(v => v.verse_number === ayah);
+                        if (verse?.words) {
+                            const words = verse.words.filter(w => w.char_type_name === 'word');
+                            this.wordDataCache[cacheKey] = words;
+                            localStorage.setItem(cacheKey, JSON.stringify(words));
+                            return words;
+                        }
+                    } catch (error) {
+                        console.error('Error fetching word data:', error);
+                    }
+
+                    return null;
+                },
+
                 async playSingleAyah(index) {
                     if (this.currentPlayingAyah === index) {
                         this.stopFullSurah();
@@ -367,16 +402,65 @@
                     this.highlightedWordIndex = -1;
 
                     const ayah = this.ayahs[index];
-                    if (!ayah?.audio_url) return;
+                    if (!ayah) return;
 
                     if (this.autoScroll) {
                         this.scrollToAyah(ayah.ayah_number);
                     }
 
-                    await this.playAyahWithHighlight(index);
+                    await this.playAyahWithWordSync(index);
                 },
 
-                async playAyahWithHighlight(index) {
+                async playAyahWithWordSync(index) {
+                    const ayah = this.ayahs[index];
+                    if (!ayah) return;
+
+                    const wordData = await this.fetchWordData(surahNumber, ayah.ayah_number);
+                    
+                    if (wordData && wordData.length > 0) {
+                        await this.playWithWordAudio(index, wordData);
+                    } else {
+                        await this.playWithEstimate(index);
+                    }
+                },
+
+                async playWithWordAudio(index, wordData) {
+                    return new Promise(async (resolve) => {
+                        for (let i = 0; i < wordData.length; i++) {
+                            if (this.stopRequested) break;
+
+                            this.highlightedWordIndex = i;
+
+                            const word = wordData[i];
+                            if (word.audio_url) {
+                                try {
+                                    await this.playWordAudio(`https://verses.quran.com/${word.audio_url}`);
+                                } catch (e) {
+                                    await this.sleep(300);
+                                }
+                            } else {
+                                await this.sleep(300);
+                            }
+                        }
+
+                        this.highlightedWordIndex = -1;
+                        resolve();
+                    });
+                },
+
+                playWordAudio(url) {
+                    return new Promise((resolve, reject) => {
+                        const audio = new Audio(url);
+                        this.currentAudio = audio;
+                        
+                        audio.onended = () => resolve();
+                        audio.onerror = () => resolve();
+                        
+                        audio.play().catch(() => resolve());
+                    });
+                },
+
+                async playWithEstimate(index) {
                     const ayah = this.ayahs[index];
                     if (!ayah?.audio_url) return;
 
@@ -456,7 +540,7 @@
                             this.scrollToAyah(this.ayahs[i].ayah_number);
                         }
 
-                        await this.playAyahWithHighlight(i);
+                        await this.playAyahWithWordSync(i);
 
                         if (this.stopRequested) break;
 
