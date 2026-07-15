@@ -206,7 +206,14 @@ class HadithService
 
     public function getRandomHadith(): ?array
     {
-        return $this->api->get('/hadis/enc/random');
+        $response = Http::timeout(15)->get(config('muslim.api_url') . '/hadis/enc/random');
+
+        if ($response->successful()) {
+            $data = $response->json();
+            return $data['data'] ?? $data;
+        }
+
+        return null;
     }
 
     public function getNextHadith(int $id): ?array
