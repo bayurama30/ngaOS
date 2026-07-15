@@ -2,6 +2,27 @@
 
 All notable changes to NgaOS - Islamic Web App will be documented in this file.
 
+## [1.0.1] - 2026-07-16
+
+### 🐛 Bug Fixes
+
+#### Al-Quran
+- Fix surah pagination - fetch all ayahs for each surah (not just 10)
+- Fix audio playback - improve audio loading and error handling
+- Fix single ayah play to support both audio modes
+
+#### Hadis
+- Fix route order - search routes before parameterized routes
+- Fix hadith search - fetch full details including grade and takhrij
+- Fix random hadis refresh - add cache buster to API calls
+- Fix missing Http import in HadithService
+
+#### UI/UX
+- Fix hadith search results showing "Sumber tidak diketahui"
+- Improve hadith search UI with better styling and quick search buttons
+
+---
+
 ## [1.0.0] - 2026-07-16
 
 ### 🎉 Initial Release
