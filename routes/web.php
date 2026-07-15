@@ -17,6 +17,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Quran Routes
     Route::get('/quran', [QuranController::class, 'index'])->name('quran.index');
+    Route::get('/quran/marked', [QuranController::class, 'marked'])->name('quran.marked');
     Route::get('/quran/{number}', [QuranController::class, 'surah'])->name('quran.surah');
     Route::get('/quran/search', [QuranController::class, 'search'])->name('quran.search');
 

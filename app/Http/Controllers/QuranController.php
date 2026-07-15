@@ -41,4 +41,9 @@ class QuranController extends Controller
             'results' => $results,
         ]);
     }
+
+    public function marked()
+    {
+        return view('quran.marked');
+    }
 }

@@ -129,7 +129,7 @@
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
                                 </template>
                             </button>
-                            <button @click="toggleBookmark(index)" class="w-9 h-9 rounded-full flex items-center justify-center transition" :class="bookmarkedAyahs.includes(index) ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-400 hover:bg-amber-50 hover:text-amber-500'">
+                            <button @click="toggleBookmark(index)" class="w-9 h-9 rounded-full flex items-center justify-center transition" :class="bookmarkedAyahs.includes(index) ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-400 hover:bg-amber-50 hover:text-amber-500'" title="Tandai Ayat">
                                 <svg class="w-4 h-4" :fill="bookmarkedAyahs.includes(index) ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
                                 </svg>
