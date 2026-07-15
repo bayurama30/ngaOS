@@ -1,4 +1,15 @@
 <x-app-layout>
+    @php
+        $colorMap = [
+            'emerald' => '#d1fae5',
+            'blue' => '#dbeafe',
+            'purple' => '#ede9fe',
+            'amber' => '#fef3c7',
+            'cyan' => '#cffafe',
+            'red' => '#fecaca',
+        ];
+    @endphp
+
     <div class="px-4 py-6">
         <div class="mb-6">
             <h2 class="text-2xl font-bold text-gray-800">Ensiklopedia Hadis</h2>
@@ -39,7 +50,7 @@
                 @foreach($mukharrijList as $key => $mukharrij)
                     <a href="{{ route('hadith.collection', $key) }}" class="block bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition">
                         <div class="flex items-center">
-                            <div class="w-12 h-12 bg-{{ $mukharrij['color'] }}-100 rounded-xl flex items-center justify-center mr-4 text-2xl">
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center mr-4 text-2xl" style="background-color: {{ $colorMap[$mukharrij['color']] ?? '#f3f4f6' }};">
                                 {{ $mukharrij['icon'] }}
                             </div>
                             <div class="flex-1">

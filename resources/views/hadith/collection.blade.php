@@ -1,4 +1,16 @@
 <x-app-layout>
+    @php
+        $colorMap = [
+            'emerald' => ['from' => '#059669', 'to' => '#047857', 'text' => '#d1fae5', 'bg' => '#065f46'],
+            'blue' => ['from' => '#2563eb', 'to' => '#1d4ed8', 'text' => '#dbeafe', 'bg' => '#1e3a5f'],
+            'purple' => ['from' => '#9333ea', 'to' => '#7e22ce', 'text' => '#e9d5ff', 'bg' => '#581c87'],
+            'amber' => ['from' => '#d97706', 'to' => '#b45309', 'text' => '#fef3c7', 'bg' => '#78350f'],
+            'cyan' => ['from' => '#0891b2', 'to' => '#0e7490', 'text' => '#cffafe', 'bg' => '#164e63'],
+            'red' => ['from' => '#dc2626', 'to' => '#b91c1c', 'text' => '#fecaca', 'bg' => '#7f1d1d'],
+        ];
+        $c = $colorMap[$mukharrij['color']] ?? $colorMap['emerald'];
+    @endphp
+
     <div class="px-4 py-6" x-data="hadithCollection('{{ $key }}')" x-init="loadHadiths()">
         <div class="mb-4">
             <a href="{{ route('hadith.index') }}" class="inline-flex items-center text-teal-600 hover:text-teal-700">
@@ -9,25 +21,25 @@
             </a>
         </div>
 
-        <div class="bg-gradient-to-br from-{{ $mukharrij['color'] }}-600 to-{{ $mukharrij['color'] }}-700 rounded-2xl p-5 mb-6 text-white">
+        <div class="rounded-2xl p-5 mb-6 text-white" style="background: linear-gradient(135deg, {{ $c['from'] }}, {{ $c['to'] }});">
             <div class="flex items-center mb-3">
                 <span class="text-3xl mr-3">{{ $mukharrij['icon'] }}</span>
                 <div>
-                    <h2 class="text-2xl font-bold">{{ $mukharrij['name'] }}</h2>
-                    <p class="text-{{ $mukharrij['color'] }}-100 text-sm">{{ $mukharrij['description'] }}</p>
+                    <h2 class="text-2xl font-bold text-white">{{ $mukharrij['name'] }}</h2>
+                    <p class="text-sm" style="color: {{ $c['text'] }};">{{ $mukharrij['description'] }}</p>
                 </div>
             </div>
             @if(isset($mukharrij['scholar']))
-                <div class="bg-white/10 rounded-lg p-3 mt-3">
-                    <p class="text-sm"><span class="font-medium">Penyusun:</span> {{ $mukharrij['scholar'] }}</p>
+                <div class="rounded-lg p-3 mt-3" style="background: rgba(255,255,255,0.15);">
+                    <p class="text-sm text-white"><span class="font-semibold">Penyusun:</span> {{ $mukharrij['scholar'] }}</p>
                     @if(isset($mukharrij['death']))
-                        <p class="text-sm"><span class="font-medium">Wafat:</span> {{ $mukharrij['death'] }}</p>
+                        <p class="text-sm text-white"><span class="font-semibold">Wafat:</span> {{ $mukharrij['death'] }}</p>
                     @endif
                 </div>
             @endif
             @if(isset($mukharrij['scholars']))
-                <div class="bg-white/10 rounded-lg p-3 mt-3">
-                    <p class="text-sm"><span class="font-medium">Penyusun:</span> {{ $mukharrij['scholars'] }}</p>
+                <div class="rounded-lg p-3 mt-3" style="background: rgba(255,255,255,0.15);">
+                    <p class="text-sm text-white"><span class="font-semibold">Penyusun:</span> {{ $mukharrij['scholars'] }}</p>
                 </div>
             @endif
         </div>
