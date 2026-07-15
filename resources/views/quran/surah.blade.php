@@ -433,16 +433,18 @@
                 },
 
                 async playSingleAyah(index) {
-                    if (this.currentPlayingAyah === index) {
+                    if (this.currentPlayingAyah === index && this.isPlayingFull === false) {
                         this.stopFullSurah();
                         return;
                     }
 
                     this.stopFullSurah();
-                    await this.sleep(100);
+                    await this.sleep(200);
 
+                    this.isPlayingFull = false;
                     this.currentPlayingAyah = index;
                     this.highlightedWordIndex = -1;
+                    this.stopRequested = false;
 
                     const ayah = this.ayahs[index];
                     if (!ayah) return;
@@ -452,6 +454,9 @@
                     }
 
                     await this.playAyahAudio(index);
+
+                    this.currentPlayingAyah = -1;
+                    this.highlightedWordIndex = -1;
                 },
 
                 async playAyahAudio(index) {
@@ -464,21 +469,33 @@
 
                 async playAyahNormal(index) {
                     const ayah = this.ayahs[index];
-                    if (!ayah?.audio_url) return;
+                    if (!ayah?.audio_url) {
+                        console.error('No audio URL for ayah:', index);
+                        return;
+                    }
 
                     return new Promise((resolve) => {
-                        const audio = new Audio(ayah.audio_url);
+                        const audio = new Audio();
                         this.currentAudio = audio;
+
+                        audio.addEventListener('canplaythrough', () => {
+                            audio.play().catch(err => {
+                                console.error('Audio play error:', err);
+                                resolve();
+                            });
+                        }, { once: true });
 
                         audio.addEventListener('ended', () => {
                             resolve();
-                        });
+                        }, { once: true });
 
-                        audio.addEventListener('error', () => {
+                        audio.addEventListener('error', (e) => {
+                            console.error('Audio error:', e);
                             resolve();
-                        });
+                        }, { once: true });
 
-                        audio.play().catch(() => resolve());
+                        audio.src = ayah.audio_url;
+                        audio.load();
                     });
                 },
 
@@ -520,14 +537,28 @@
                 },
 
                 playWordAudio(url) {
-                    return new Promise((resolve, reject) => {
-                        const audio = new Audio(url);
+                    return new Promise((resolve) => {
+                        const audio = new Audio();
                         this.currentAudio = audio;
-                        
-                        audio.onended = () => resolve();
-                        audio.onerror = () => resolve();
-                        
-                        audio.play().catch(() => resolve());
+
+                        audio.addEventListener('canplaythrough', () => {
+                            audio.play().catch(err => {
+                                console.error('Word audio play error:', err);
+                                resolve();
+                            });
+                        }, { once: true });
+
+                        audio.addEventListener('ended', () => {
+                            resolve();
+                        }, { once: true });
+
+                        audio.addEventListener('error', (e) => {
+                            console.error('Word audio error:', e);
+                            resolve();
+                        }, { once: true });
+
+                        audio.src = url;
+                        audio.load();
                     });
                 },
 
