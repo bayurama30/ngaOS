@@ -77,7 +77,7 @@
                         const lng = position.coords.longitude;
                         this.location = `Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`;
 
-                        const response = await fetch(`/api/qibla/direction?lat=${lat}&lng=${lng}`);
+                        const response = await fetch(`/api/muslim/qibla?lat=${lat}&lng=${lng}`);
                         const data = await response.json();
 
                         if (data.direction) {

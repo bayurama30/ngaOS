@@ -2,144 +2,92 @@
 
 namespace App\Services;
 
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
 
 class HadithService
 {
-    private string $apiUrl;
+    private MuslimApiService $api;
 
     private int $cacheTtl;
 
-    public function __construct()
+    public function __construct(MuslimApiService $api)
     {
-        $this->apiUrl = config('hadith.api_url');
-        $this->cacheTtl = config('hadith.cache_ttl');
+        $this->api = $api;
+        $this->cacheTtl = config('muslim.cache_ttl');
     }
 
-    public function getBooks(): array
+    public function getEncyclopediaMeta(): ?array
     {
-        return config('hadith.books');
-    }
+        $cacheKey = 'hadith:enc:meta';
 
-    public function getBook(string $slug): ?array
-    {
-        $books = $this->getBooks();
-
-        return $books[$slug] ?? null;
-    }
-
-    public function getHadiths(string $bookSlug, int $page = 1, int $perPage = 20): LengthAwarePaginator
-    {
-        $book = $this->getBook($bookSlug);
-
-        if (! $book) {
-            return new LengthAwarePaginator(collect(), 0, $perPage);
-        }
-
-        $cacheKey = "hadith:{$bookSlug}:page:{$page}";
-
-        $data = Cache::remember($cacheKey, $this->cacheTtl, function () use ($bookSlug) {
-            $response = Http::get("{$this->apiUrl}/editions/{$bookSlug}.json");
-
-            if ($response->successful()) {
-                return $response->json();
-            }
-
-            return null;
-        });
-
-        if (! $data || ! isset($data['hadiths'])) {
-            return new LengthAwarePaginator(collect(), 0, $perPage);
-        }
-
-        $hadiths = collect($data['hadiths']);
-        $total = $hadiths->count();
-        $items = $hadiths->slice(($page - 1) * $perPage, $perPage)->values();
-
-        return new LengthAwarePaginator(
-            $items,
-            $total,
-            $perPage,
-            $page,
-            ['path' => request()->url()]
-        );
-    }
-
-    public function getHadith(string $bookSlug, int $hadithNumber): ?array
-    {
-        $cacheKey = "hadith:{$bookSlug}:{$hadithNumber}";
-
-        return Cache::remember($cacheKey, $this->cacheTtl, function () use ($bookSlug, $hadithNumber) {
-            $response = Http::get("{$this->apiUrl}/editions/{$bookSlug}/hadiths/{$hadithNumber}.json");
-
-            if ($response->successful()) {
-                return $response->json();
-            }
-
-            return null;
+        return Cache::remember($cacheKey, $this->cacheTtl, function () {
+            return $this->api->get('/hadis/enc');
         });
     }
 
-    public function search(string $query, ?string $bookSlug = null): Collection
+    public function getHadith(int $id): ?array
     {
-        $cacheKey = 'hadith:search:'.md5($query.$bookSlug);
+        $cacheKey = "hadith:enc:{$id}";
 
-        return Cache::remember($cacheKey, 3600, function () use ($query, $bookSlug) {
-            $results = collect();
-
-            $books = $bookSlug ? [$bookSlug => $this->getBook($bookSlug)] : $this->getBooks();
-
-            foreach ($books as $slug => $book) {
-                if (! $book) {
-                    continue;
-                }
-
-                $response = Http::get("{$this->apiUrl}/editions/{$slug}.json");
-
-                if ($response->successful()) {
-                    $hadiths = $response->json('hadiths', []);
-
-                    foreach ($hadiths as $hadith) {
-                        $text = $hadith['body'] ?? '';
-                        if (stripos($text, $query) !== false) {
-                            $results->push([
-                                'book' => $book['name'],
-                                'book_slug' => $slug,
-                                'hadith' => $hadith,
-                            ]);
-                        }
-                    }
-                }
-
-                if ($results->count() >= 50) {
-                    break;
-                }
-            }
-
-            return $results;
+        return Cache::remember($cacheKey, $this->cacheTtl, function () use ($id) {
+            return $this->api->get("/hadis/enc/show/{$id}");
         });
     }
 
-    public function getBookInfo(string $bookSlug): ?array
+    public function getRandomHadith(): ?array
     {
-        $cacheKey = "hadith:info:{$bookSlug}";
+        return $this->api->get('/hadis/enc/random');
+    }
 
-        return Cache::remember($cacheKey, $this->cacheTtl, function () use ($bookSlug) {
-            $response = Http::get("{$this->apiUrl}/editions/{$bookSlug}.json");
+    public function getNextHadith(int $id): ?array
+    {
+        return $this->api->get("/hadis/enc/next/{$id}");
+    }
 
-            if ($response->successful()) {
-                $data = $response->json();
+    public function getPrevHadith(int $id): ?array
+    {
+        return $this->api->get("/hadis/enc/prev/{$id}");
+    }
 
-                return [
-                    'book' => $data['metadata'] ?? [],
-                    'total' => $data['metadata']['hadiths_count_number'] ?? 0,
-                ];
-            }
+    public function explore(int $page = 1, int $limit = 5): ?array
+    {
+        return $this->api->get('/hadis/enc/explore', [
+            'page' => $page,
+            'limit' => $limit,
+        ]);
+    }
 
-            return null;
+    public function search(string $keyword, int $page = 1, int $limit = 10): ?array
+    {
+        return $this->api->get("/hadis/enc/cari/{$keyword}", [
+            'page' => $page,
+            'limit' => $limit,
+        ]);
+    }
+
+    public function getNarratorsSummary(): ?array
+    {
+        $cacheKey = 'hadith:perawi:summary';
+
+        return Cache::remember($cacheKey, $this->cacheTtl, function () {
+            return $this->api->get('/hadis/perawi');
         });
+    }
+
+    public function getNarratorDetail(int $id): ?array
+    {
+        $cacheKey = "hadith:perawi:{$id}";
+
+        return Cache::remember($cacheKey, $this->cacheTtl, function () use ($id) {
+            return $this->api->get("/hadist/perawi/id/{$id}");
+        });
+    }
+
+    public function browseNarrators(int $page = 1, int $limit = 10): ?array
+    {
+        return $this->api->get('/hadist/perawi/browse', [
+            'page' => $page,
+            'limit' => $limit,
+        ]);
     }
 }

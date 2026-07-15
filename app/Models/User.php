@@ -22,6 +22,8 @@ class User extends Authenticatable
         'location_lat',
         'location_lng',
         'city',
+        'city_id',
+        'timezone',
         'calculation_method',
     ];
 

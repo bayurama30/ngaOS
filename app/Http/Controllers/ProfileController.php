@@ -24,6 +24,8 @@ class ProfileController extends Controller
             'location_lat' => 'nullable|numeric|between:-90,90',
             'location_lng' => 'nullable|numeric|between:-180,180',
             'city' => 'nullable|string|max:255',
+            'city_id' => 'nullable|string|max:255',
+            'timezone' => 'nullable|string|max:50',
             'calculation_method' => 'nullable|integer|in:1,2,3,4,5,7,8,9,10,11,12,13,14,15',
         ]);
 

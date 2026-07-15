@@ -2,67 +2,40 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Collection;
 
 class QuranService
 {
-    private string $apiUrl;
+    private MuslimApiService $api;
 
     private int $cacheTtl;
 
-    public function __construct()
+    public function __construct(MuslimApiService $api)
     {
-        $this->apiUrl = config('quran.api_url');
-        $this->cacheTtl = config('quran.cache_ttl');
+        $this->api = $api;
+        $this->cacheTtl = config('muslim.cache_ttl');
     }
 
     public function getSurahList(): Collection
     {
-        return Cache::remember('quran:surah_list', $this->cacheTtl, function () {
-            $response = Http::get("{$this->apiUrl}/surah");
+        $cacheKey = 'quran:surah_list';
 
-            if ($response->successful()) {
-                return collect($response->json('data'));
-            }
+        return Cache::remember($cacheKey, $this->cacheTtl, function () {
+            $data = $this->api->get('/quran');
 
-            return collect();
+            return $data ? collect($data) : collect();
         });
     }
 
     public function getSurah(int $number): ?array
     {
-        return Cache::remember("quran:surah:{$number}", $this->cacheTtl, function () use ($number) {
-            $response = Http::get("{$this->apiUrl}/surah/{$number}");
+        $cacheKey = "quran:surah:{$number}";
 
-            if ($response->successful()) {
-                return $response->json('data');
-            }
+        return Cache::remember($cacheKey, $this->cacheTtl, function () use ($number) {
+            $data = $this->api->get("/quran/{$number}");
 
-            return null;
-        });
-    }
-
-    public function getSurahWithTranslation(int $surahNumber, int $translationId = 33): array
-    {
-        $cacheKey = "quran:surah:{$surahNumber}:translation:{$translationId}";
-
-        return Cache::remember($cacheKey, $this->cacheTtl, function () use ($surahNumber, $translationId) {
-            $response = Http::get("{$this->apiUrl}/surah/{$surahNumber}/editions", [
-                'editions' => "quran-simple,$translationId",
-            ]);
-
-            if ($response->successful()) {
-                $data = $response->json('data');
-
-                return [
-                    'arabic' => $data[0] ?? null,
-                    'translation' => $data[1] ?? null,
-                ];
-            }
-
-            return ['arabic' => null, 'translation' => null];
+            return $data;
         });
     }
 
@@ -71,65 +44,50 @@ class QuranService
         $cacheKey = "quran:ayah:{$surahNumber}:{$ayahNumber}";
 
         return Cache::remember($cacheKey, $this->cacheTtl, function () use ($surahNumber, $ayahNumber) {
-            $response = Http::get("{$this->apiUrl}/ayah/{$surahNumber}:{$ayahNumber}/editions", [
-                'editions' => 'quran-simple,id',
-            ]);
-
-            if ($response->successful()) {
-                $data = $response->json('data');
-
-                return [
-                    'arabic' => $data[0] ?? null,
-                    'translation' => $data[1] ?? null,
-                ];
-            }
-
-            return null;
+            return $this->api->get("/quran/{$surahNumber}/{$ayahNumber}");
         });
     }
 
-    public function search(string $query): Collection
+    public function getRandomAyah(): ?array
     {
-        $cacheKey = 'quran:search:'.md5($query);
-
-        return Cache::remember($cacheKey, 3600, function () use ($query) {
-            $response = Http::get("{$this->apiUrl}/search", [
-                'q' => $query,
-                'language' => 'id',
-            ]);
-
-            if ($response->successful()) {
-                return collect($response->json('data.matches'));
-            }
-
-            return collect();
-        });
+        return $this->api->get('/quran/random');
     }
 
-    public function getAudioUrl(int $surahNumber, int $reciterId = 7): string
+    public function search(string $query, int $limit = 10): ?array
     {
-        return "https://cdn.islamic.network/quran/audio-surah/128/{$reciterId}/{$surahNumber}.mp3";
+        return $this->api->post('/quran/search', [
+            'keyword' => $query,
+            'limit' => $limit,
+        ]);
     }
 
-    public function getTafsir(int $surahNumber): ?array
+    public function getAyahsByJuz(int $juz, int $page = 1, int $limit = 10): ?array
     {
-        $cacheKey = "quran:tafsir:{$surahNumber}";
+        return $this->api->get("/quran/juz/{$juz}", [
+            'page' => $page,
+            'limit' => $limit,
+        ]);
+    }
 
-        return Cache::remember($cacheKey, $this->cacheTtl, function () use ($surahNumber) {
-            $response = Http::get("{$this->apiUrl}/surah/{$surahNumber}/editions", [
-                'editions' => 'quran-simple,en-tafisr-ibn-kathir',
-            ]);
+    public function getAyahsByPage(int $page, int $limit = 10): ?array
+    {
+        return $this->api->get("/quran/page/{$page}", [
+            'limit' => $limit,
+        ]);
+    }
 
-            if ($response->successful()) {
-                $data = $response->json('data');
+    public function getSajdaAyahs(): ?array
+    {
+        return $this->api->get('/quran/sajda');
+    }
 
-                return [
-                    'arabic' => $data[0] ?? null,
-                    'tafsir' => $data[1] ?? null,
-                ];
-            }
+    public function getAudioUrl(int $surahNumber): string
+    {
+        return "https://cdn.myquran.com/audio/surah/{$surahNumber}.mp3";
+    }
 
-            return null;
-        });
+    public function getAudioPageUrl(int $pageNumber): string
+    {
+        return "https://cdn.myquran.com/audio/page/{$pageNumber}.mp3";
     }
 }

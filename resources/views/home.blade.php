@@ -2,12 +2,20 @@
     <div class="px-4 py-6">
         {{-- Welcome Section --}}
         <div class="mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Assalamu'alaikum</h2>
-            @auth
-                <p class="text-gray-600 mt-1">{{ auth()->user()->name }}</p>
-            @else
-                <p class="text-gray-600 mt-1">Selamat datang di NgaOS</p>
-            @endauth
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Assalamu'alaikum</h2>
+                    @auth
+                        <p class="text-gray-600 mt-1">{{ auth()->user()->name }}</p>
+                    @else
+                        <p class="text-gray-600 mt-1">Selamat datang di NgaOS</p>
+                    @endauth
+                </div>
+                <div x-data="hijriDate()" x-init="loadHijriDate()" class="text-right">
+                    <p class="text-xs text-gray-500" x-text="hijri.date || ''"></p>
+                    <p class="text-xs text-teal-600 font-medium" x-text="hijri.dayName || ''"></p>
+                </div>
+            </div>
         </div>
 
         {{-- Prayer Time Widget --}}
@@ -85,6 +93,28 @@
             </a>
         </div>
 
+        {{-- Random Hadis --}}
+        <div class="bg-white rounded-xl p-5 mb-6 shadow-sm border border-gray-100" x-data="randomHadis()" x-init="loadHadis()">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-bold text-gray-800">Hadis Hari Ini</h3>
+                <button @click="loadHadis()" class="text-teal-600 hover:text-teal-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                </button>
+            </div>
+            <div x-show="loading" class="text-center py-4">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto"></div>
+            </div>
+            <div x-show="!loading && hadis" class="space-y-3">
+                <p class="text-gray-700 text-sm leading-relaxed" x-text="hadis?.text?.id || ''"></p>
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-gray-500" x-text="hadis?.takhrij || ''"></span>
+                    <span :class="[hadis?.grade === 'Shahih' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700', 'px-2 py-0.5 rounded-full']" x-text="hadis?.grade || ''"></span>
+                </div>
+            </div>
+        </div>
+
         {{-- Daily Verse --}}
         <div class="bg-white rounded-xl p-5 mb-6 shadow-sm border border-gray-100" x-data="dailyVerse()" x-init="loadVerse()">
             <h3 class="text-lg font-bold text-gray-800 mb-3">Ayat Hari Ini</h3>
@@ -92,7 +122,7 @@
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto"></div>
             </div>
             <div x-show="!loading && verse" class="space-y-3">
-                <p class="font-arabic text-2xl text-right leading-loose text-gray-800" x-text="verse?.arabic"></p>
+                <p class="text-2xl text-right leading-loose text-gray-800" style="font-family: 'LPMQ IsepMisbah', serif" x-text="verse?.arab"></p>
                 <p class="text-gray-600 text-sm italic" x-text="verse?.translation"></p>
                 <p class="text-teal-600 text-sm font-medium" x-text="verse?.reference"></p>
             </div>
@@ -143,45 +173,89 @@
     </div>
 
     <script>
+        function hijriDate() {
+            return {
+                hijri: {},
+                async loadHijriDate() {
+                    try {
+                        const response = await fetch('/api/muslim/hijri/today');
+                        const data = await response.json();
+                        if (data) {
+                            this.hijri = {
+                                date: data.hijr?.today || '',
+                                dayName: data.hijr?.dayName || ''
+                            };
+                        }
+                    } catch (error) {
+                        console.error('Error loading hijri date:', error);
+                    }
+                }
+            };
+        }
+
         function prayerWidget() {
             return {
                 nextPrayer: {},
                 location: 'Mendeteksi lokasi...',
                 date: '',
                 loading: true,
-
                 async loadPrayerTimes() {
                     try {
-                        const position = await new Promise((resolve, reject) => {
-                            navigator.geolocation.getCurrentPosition(resolve, reject, {
-                                enableHighAccuracy: true,
-                                timeout: 10000
-                            });
-                        });
-
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
-
-                        this.location = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-
-                        const response = await fetch(`/api/prayer/next?lat=${lat}&lng=${lng}`);
+                        const response = await fetch('/api/muslim/prayer?city_id={{ auth()->user()->city_id ?? "" }}&tz={{ auth()->user()->timezone ?? "Asia/Jakarta" }}');
                         const data = await response.json();
-
-                        if (data.name) {
-                            this.nextPrayer = data;
-                            const tz = data.timezone || 'Asia/Jakarta';
+                        if (data?.jadwal) {
+                            this.location = data.kabko || 'Indonesia';
+                            this.date = data.jadwal.tanggal || '';
+                            const schedule = data.jadwal;
                             const now = new Date();
-                            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: tz };
-                            this.date = now.toLocaleDateString('id-ID', options);
-                        } else {
-                            this.nextPrayer = { name: 'Dhuhr', time: '12:00', remaining: '--' };
-                            this.date = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                            const prayers = [
+                                { name: 'Subuh', time: schedule.subuh },
+                                { name: 'Dzuhur', time: schedule.dzuhur },
+                                { name: 'Ashar', time: schedule.ashar },
+                                { name: 'Maghrib', time: schedule.maghrib },
+                                { name: 'Isya', time: schedule.isya },
+                            ];
+                            for (const prayer of prayers) {
+                                const [h, m] = prayer.time.split(':');
+                                const prayerTime = new Date();
+                                prayerTime.setHours(parseInt(h), parseInt(m), 0);
+                                if (prayerTime > now) {
+                                    const diff = prayerTime - now;
+                                    const hours = Math.floor(diff / 3600000);
+                                    const minutes = Math.floor((diff % 3600000) / 60000);
+                                    this.nextPrayer = {
+                                        name: prayer.name,
+                                        time: prayer.time,
+                                        remaining: `${hours} jam ${minutes} menit`
+                                    };
+                                    break;
+                                }
+                            }
+                            if (!this.nextPrayer.name) {
+                                this.nextPrayer = { name: 'Subuh', time: schedule.subuh, remaining: 'Besok' };
+                            }
                         }
                     } catch (error) {
                         console.error('Error loading prayer times:', error);
-                        this.location = 'Lokasi tidak tersedia';
-                        this.nextPrayer = { name: 'Dhuhr', time: '12:00', remaining: '--' };
-                        this.date = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                        this.nextPrayer = { name: 'Dzuhur', time: '12:00', remaining: '--' };
+                    }
+                    this.loading = false;
+                }
+            };
+        }
+
+        function randomHadis() {
+            return {
+                hadis: null,
+                loading: true,
+                async loadHadis() {
+                    this.loading = true;
+                    try {
+                        const response = await fetch('/api/muslim/hadis/random');
+                        const data = await response.json();
+                        this.hadis = data;
+                    } catch (error) {
+                        console.error('Error loading hadis:', error);
                     }
                     this.loading = false;
                 }
@@ -192,28 +266,21 @@
             return {
                 verse: null,
                 loading: true,
-
                 async loadVerse() {
                     try {
-                        const surah = Math.floor(Math.random() * 114) + 1;
-                        const response = await fetch(`https://api.alquran.cloud/v1/surah/${surah}/editions`);
+                        const response = await fetch('/api/muslim/quran/random');
                         const data = await response.json();
-
-                        if (data.code === 200 && data.data) {
-                            const arabic = data.data[0];
-                            const translation = data.data[1];
-                            const ayahNum = Math.floor(Math.random() * arabic.numberOfAyahs);
-
+                        if (data) {
                             this.verse = {
-                                arabic: arabic.ayahs[ayahNum].text,
-                                translation: translation.ayahs[ayahNum].text,
-                                reference: `${arabic.englishName} (${arabic.number}:${ayahNum + 1})`
+                                arab: data.arab || '',
+                                translation: data.translation || '',
+                                reference: `${data.surah?.name_latin || ''} (${data.surah_number || ''}:${data.ayah_number || ''})`
                             };
                         }
                     } catch (error) {
                         console.error('Error loading verse:', error);
                         this.verse = {
-                            arabic: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
+                            arab: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
                             translation: 'Dengan nama Allah Yang Maha Pengasih, Maha Penyayang',
                             reference: 'Al-Fatihah (1:1)'
                         };

@@ -2,128 +2,116 @@
 
 namespace App\Services;
 
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
 
 class PrayerTimeService
 {
-    private string $apiUrl;
+    private MuslimApiService $api;
 
     private int $cacheTtl;
 
-    public function __construct()
+    public function __construct(MuslimApiService $api)
     {
-        $this->apiUrl = config('prayer.api_url');
-        $this->cacheTtl = config('prayer.cache_ttl');
+        $this->api = $api;
+        $this->cacheTtl = config('muslim.cache_ttl');
     }
 
-    public function getTimings(float $lat, float $lng, ?string $date = null, int $method = 2): ?array
+    public function searchCity(string $keyword): ?array
     {
-        $date = $date ?? Carbon::now()->format('d-m-Y');
-        $cacheKey = "prayer:timings:{$lat}:{$lng}:{$date}:{$method}";
+        $cacheKey = 'muslim:city:search:' . md5($keyword);
 
-        return Cache::remember($cacheKey, $this->cacheTtl, function () use ($lat, $lng, $date, $method) {
-            $timestamp = Carbon::createFromFormat('d-m-Y', $date)->timestamp;
-
-            $response = Http::get("{$this->apiUrl}/timings/{$timestamp}", [
-                'latitude' => $lat,
-                'longitude' => $lng,
-                'method' => $method,
-            ]);
-
-            if ($response->successful()) {
-                return $response->json('data');
-            }
-
-            return null;
+        return Cache::remember($cacheKey, 86400, function () use ($keyword) {
+            return $this->api->get("/sholat/kabkota/cari/{$keyword}");
         });
     }
 
-    public function getMonthlyCalendar(float $lat, float $lng, ?int $month = null, ?int $year = null, int $method = 2): array
+    public function getCityById(string $id): ?array
     {
-        $month = $month ?? Carbon::now()->month;
-        $year = $year ?? Carbon::now()->year;
-        $cacheKey = "prayer:calendar:{$lat}:{$lng}:{$month}:{$year}:{$method}";
+        $cacheKey = "muslim:city:{$id}";
 
-        return Cache::remember($cacheKey, $this->cacheTtl, function () use ($lat, $lng, $month, $year, $method) {
-            $response = Http::get("{$this->apiUrl}/calendar/{$year}/{$month}", [
-                'latitude' => $lat,
-                'longitude' => $lng,
-                'method' => $method,
-            ]);
-
-            if ($response->successful()) {
-                return $response->json('data');
-            }
-
-            return [];
+        return Cache::remember($cacheKey, 86400, function () use ($id) {
+            return $this->api->get("/sholat/kabkota/{$id}");
         });
     }
 
-    public function getNextPrayer(float $lat, float $lng, int $method = 2): ?array
+    public function getTodaySchedule(string $cityId, string $timezone = 'Asia/Jakarta'): ?array
     {
-        $timings = $this->getTimings($lat, $lng, null, $method);
+        $cacheKey = "muslim:prayer:today:{$cityId}:{$timezone}";
 
-        if (! $timings || ! isset($timings['timings'])) {
+        return Cache::remember($cacheKey, 3600, function () use ($cityId, $timezone) {
+            return $this->api->get("/sholat/jadwal/{$cityId}/today", [
+                'tz' => $timezone,
+            ]);
+        });
+    }
+
+    public function getScheduleByDate(string $cityId, string $date, string $timezone = 'Asia/Jakarta'): ?array
+    {
+        $cacheKey = "muslim:prayer:{$cityId}:{$date}:{$timezone}";
+
+        return Cache::remember($cacheKey, 3600, function () use ($cityId, $date, $timezone) {
+            return $this->api->get("/sholat/jadwal/{$cityId}/{$date}", [
+                'tz' => $timezone,
+            ]);
+        });
+    }
+
+    public function getMonthlySchedule(string $cityId, int $month, int $year, string $timezone = 'Asia/Jakarta'): ?array
+    {
+        $period = sprintf('%04d-%02d', $year, $month);
+        $cacheKey = "muslim:prayer:monthly:{$cityId}:{$period}:{$timezone}";
+
+        return Cache::remember($cacheKey, 86400, function () use ($cityId, $period, $timezone) {
+            return $this->api->get("/sholat/jadwal/{$cityId}/{$period}", [
+                'tz' => $timezone,
+            ]);
+        });
+    }
+
+    public function getNextPrayer(?array $schedule): ?array
+    {
+        if (!$schedule || !isset($schedule['jadwal'])) {
             return null;
         }
 
-        $timezone = $timings['meta']['timezone'] ?? 'UTC';
-
-        try {
-            $now = Carbon::now($timezone);
-        } catch (\Exception $e) {
-            $now = Carbon::now();
-        }
+        $jadwal = $schedule['jadwal'];
+        $now = new \DateTime();
+        $today = $now->format('Y-m-d');
 
         $prayers = [
-            'Fajr' => $timings['timings']['Fajr'] ?? null,
-            'Sunrise' => $timings['timings']['Sunrise'] ?? null,
-            'Dhuhr' => $timings['timings']['Dhuhr'] ?? null,
-            'Asr' => $timings['timings']['Asr'] ?? null,
-            'Maghrib' => $timings['timings']['Maghrib'] ?? null,
-            'Isha' => $timings['timings']['Isha'] ?? null,
+            'Subuh' => $jadwal['subuh'] ?? null,
+            'Terbit' => $jadwal['terbit'] ?? null,
+            'Dhuha' => $jadwal['dhuha'] ?? null,
+            'Dzuhur' => $jadwal['dzuhur'] ?? null,
+            'Ashar' => $jadwal['ashar'] ?? null,
+            'Maghrib' => $jadwal['maghrib'] ?? null,
+            'Isya' => $jadwal['isya'] ?? null,
         ];
 
         foreach ($prayers as $name => $time) {
-            if (! $time) {
-                continue;
-            }
+            if (!$time) continue;
 
-            $prayerTime = Carbon::createFromFormat('H:i', substr($time, 0, 5), $timezone);
+            $prayerTime = \DateTime::createFromFormat('H:i', $time);
 
-            if ($prayerTime->gt($now)) {
+            if ($prayerTime > $now) {
+                $diff = $now->diff($prayerTime);
+
                 return [
                     'name' => $name,
-                    'time' => substr($time, 0, 5),
-                    'remaining' => $now->diff($prayerTime)->format('%h jam %i menit'),
-                    'timestamp' => $prayerTime->timestamp,
-                    'timezone' => $timezone,
+                    'time' => $time,
+                    'remaining' => $diff->format('%h jam %i menit'),
                 ];
             }
         }
 
-        $firstPrayer = Carbon::createFromFormat('H:i', substr($prayers['Fajr'], 0, 5), $timezone)->addDay();
+        $firstPrayer = \DateTime::createFromFormat('H:i', $prayers['Subuh']);
+        $firstPrayer->modify('+1 day');
+        $diff = $now->diff($firstPrayer);
 
         return [
-            'name' => 'Fajr',
-            'time' => substr($prayers['Fajr'], 0, 5),
-            'remaining' => $now->diff($firstPrayer)->format('%h jam %i menit'),
-            'timestamp' => $firstPrayer->timestamp,
-            'timezone' => $timezone,
+            'name' => 'Subuh',
+            'time' => $prayers['Subuh'],
+            'remaining' => $diff->format('%h jam %i menit'),
         ];
-    }
-
-    public function getTimezone(float $lat, float $lng): string
-    {
-        $timings = $this->getTimings($lat, $lng);
-
-        return $timings['meta']['timezone'] ?? 'Asia/Jakarta';
-    }
-
-    public function getCalculationMethods(): array
-    {
-        return config('prayer.calculation_methods');
     }
 }
