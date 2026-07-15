@@ -114,4 +114,13 @@ class PrayerTimeService
             'remaining' => $diff->format('%h jam %i menit'),
         ];
     }
+
+    public function getAllCities(): ?array
+    {
+        $cacheKey = 'muslim:cities:all';
+
+        return Cache::remember($cacheKey, 86400 * 7, function () {
+            return $this->api->get('/sholat/kabkota/semua');
+        });
+    }
 }

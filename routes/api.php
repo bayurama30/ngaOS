@@ -11,6 +11,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::get('/muslim/city/search', [MuslimController::class, 'searchCity']);
+Route::get('/muslim/city/all', [MuslimController::class, 'allCities']);
 Route::get('/muslim/prayer', [MuslimController::class, 'prayerSchedule']);
 Route::get('/muslim/qibla', [MuslimController::class, 'qiblaDirection']);
 Route::get('/muslim/hijri/today', [MuslimController::class, 'todayHijri']);

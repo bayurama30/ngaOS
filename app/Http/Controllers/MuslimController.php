@@ -132,4 +132,11 @@ class MuslimController extends Controller
 
         return response()->json($surah);
     }
+
+    public function allCities()
+    {
+        $cities = $this->prayerService->getAllCities();
+
+        return response()->json($cities ?? []);
+    }
 }
