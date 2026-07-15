@@ -161,7 +161,7 @@
                         <template x-if="currentPlayingAyah === index">
                             <span>
                                 <template x-for="(word, wIndex) in ayah.arab.split(' ')" :key="wIndex">
-                                    <span :class="wIndex <= highlightedWordIndex ? 'bg-yellow-200 rounded px-0.5 transition-colors duration-200' : 'transition-colors duration-200'"
+                                    <span :class="wIndex === highlightedWordIndex ? 'bg-yellow-200 rounded px-0.5 transition-colors duration-100' : 'transition-colors duration-100'"
                                           x-text="word + ' '"></span>
                                 </template>
                             </span>
@@ -383,36 +383,46 @@
                     return new Promise((resolve) => {
                         const audio = new Audio(ayah.audio_url);
                         this.currentAudio = audio;
+                        let highlightInterval = null;
+                        let startTime = 0;
 
-                        audio.addEventListener('loadedmetadata', () => {
+                        const startHighlight = () => {
                             const words = ayah.arab.split(' ').filter(w => w.trim());
                             const duration = audio.duration * 1000;
                             const timePerWord = duration / words.length;
-
+                            
+                            startTime = Date.now();
                             let wordIndex = 0;
-                            const highlightInterval = setInterval(() => {
-                                if (wordIndex < words.length && !this.stopRequested) {
-                                    this.highlightedWordIndex = wordIndex;
-                                    wordIndex++;
-                                } else {
-                                    clearInterval(highlightInterval);
+                            this.highlightedWordIndex = 0;
+
+                            highlightInterval = setInterval(() => {
+                                if (!this.stopRequested && !audio.paused) {
+                                    const elapsed = Date.now() - startTime;
+                                    const newIndex = Math.floor(elapsed / timePerWord);
+                                    
+                                    if (newIndex < words.length && newIndex !== wordIndex) {
+                                        wordIndex = newIndex;
+                                        this.highlightedWordIndex = wordIndex;
+                                    }
+                                    
+                                    if (newIndex >= words.length) {
+                                        clearInterval(highlightInterval);
+                                        this.highlightedWordIndex = -1;
+                                    }
                                 }
-                            }, timePerWord);
+                            }, 50);
+                        };
 
-                            audio.addEventListener('ended', () => {
-                                clearInterval(highlightInterval);
-                                this.highlightedWordIndex = -1;
-                                resolve();
-                            });
+                        audio.addEventListener('playing', startHighlight);
 
-                            audio.addEventListener('error', () => {
-                                clearInterval(highlightInterval);
-                                this.highlightedWordIndex = -1;
-                                resolve();
-                            });
+                        audio.addEventListener('ended', () => {
+                            if (highlightInterval) clearInterval(highlightInterval);
+                            this.highlightedWordIndex = -1;
+                            resolve();
                         });
 
                         audio.addEventListener('error', () => {
+                            if (highlightInterval) clearInterval(highlightInterval);
                             this.highlightedWordIndex = -1;
                             resolve();
                         });
