@@ -229,9 +229,39 @@ class HadithService
 
     public function search(string $keyword, int $page = 1, int $limit = 10): ?array
     {
-        return $this->api->get("/hadis/enc/cari/{$keyword}", [
+        $cacheKey = "hadith:search:" . md5($keyword) . ":{$page}:{$limit}";
+
+        $cached = Cache::get($cacheKey);
+        if ($cached) {
+            return $cached;
+        }
+
+        $searchResults = $this->api->get("/hadis/enc/cari/{$keyword}", [
             'page' => $page,
             'limit' => $limit,
         ]);
+
+        if (!$searchResults || !isset($searchResults['hadis'])) {
+            return $searchResults;
+        }
+
+        $enrichedHadis = [];
+        foreach ($searchResults['hadis'] as $hadis) {
+            $id = $hadis['id'] ?? null;
+            if (!$id) continue;
+
+            $fullHadith = $this->getHadith($id);
+            if ($fullHadith) {
+                $enrichedHadis[] = $fullHadith;
+            } else {
+                $enrichedHadis[] = $hadis;
+            }
+        }
+
+        $searchResults['hadis'] = $enrichedHadis;
+
+        Cache::put($cacheKey, $searchResults, $this->cacheTtl);
+
+        return $searchResults;
     }
 }
