@@ -39,9 +39,20 @@ class PrayerTimeService
         $cacheKey = "muslim:prayer:today:{$cityId}:{$timezone}";
 
         return Cache::remember($cacheKey, 3600, function () use ($cityId, $timezone) {
-            return $this->api->get("/sholat/jadwal/{$cityId}/today", [
+            $response = $this->api->get("/sholat/jadwal/{$cityId}/today", [
                 'tz' => $timezone,
             ]);
+
+            if (!$response) return null;
+
+            if (isset($response['jadwal']) && is_array($response['jadwal'])) {
+                $dateKey = array_key_first($response['jadwal']);
+                if ($dateKey && isset($response['jadwal'][$dateKey])) {
+                    $response['jadwal'] = $response['jadwal'][$dateKey];
+                }
+            }
+
+            return $response;
         });
     }
 
