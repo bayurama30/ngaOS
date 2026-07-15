@@ -17,15 +17,15 @@ class QuranService
         $this->cacheTtl = config('muslim.cache_ttl');
     }
 
-    public function getSurahList(): Collection
+    public function getSurahList(): array
     {
         $cacheKey = 'quran:surah_list';
 
-        return Cache::remember($cacheKey, $this->cacheTtl, function () {
-            $data = $this->api->get('/quran');
-
-            return $data ? collect($data) : collect();
+        $data = Cache::remember($cacheKey, $this->cacheTtl, function () {
+            return $this->api->get('/quran');
         });
+
+        return is_array($data) ? $data : [];
     }
 
     public function getSurah(int $number): ?array
