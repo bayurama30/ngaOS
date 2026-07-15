@@ -13,7 +13,25 @@ class HadithController extends Controller
 
     public function index()
     {
-        return view('hadith.index');
+        $mukharrijList = $this->hadithService->getMukharrijList();
+
+        return view('hadith.index', [
+            'mukharrijList' => $mukharrijList,
+        ]);
+    }
+
+    public function collection(string $key)
+    {
+        $mukharrij = $this->hadithService->getMukharrij($key);
+
+        if (!$mukharrij) {
+            abort(404);
+        }
+
+        return view('hadith.collection', [
+            'key' => $key,
+            'mukharrij' => $mukharrij,
+        ]);
     }
 
     public function show(int $id)

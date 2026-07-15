@@ -22,6 +22,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Hadith Routes
     Route::get('/hadith', [HadithController::class, 'index'])->name('hadith.index');
+    Route::get('/hadith/collection/{key}', [HadithController::class, 'collection'])->name('hadith.collection');
     Route::get('/hadith/{id}', [HadithController::class, 'show'])->name('hadith.show');
     Route::get('/hadith/search', [HadithController::class, 'search'])->name('hadith.search');
 

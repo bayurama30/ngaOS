@@ -16,6 +16,7 @@ Route::get('/muslim/prayer', [MuslimController::class, 'prayerSchedule']);
 Route::get('/muslim/qibla', [MuslimController::class, 'qiblaDirection']);
 Route::get('/muslim/hijri/today', [MuslimController::class, 'todayHijri']);
 Route::get('/muslim/hadis/random', [MuslimController::class, 'randomHadis']);
+Route::get('/muslim/hadis/mukharrij/{key}', [MuslimController::class, 'hadisByMukharrij']);
 Route::get('/muslim/hadis/explore', [MuslimController::class, 'exploreHadis']);
 Route::get('/muslim/hadis/search', [MuslimController::class, 'searchHadis']);
 Route::get('/muslim/hadis/{id}', [MuslimController::class, 'getHadis']);

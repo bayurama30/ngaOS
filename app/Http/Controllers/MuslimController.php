@@ -99,6 +99,16 @@ class MuslimController extends Controller
         return response()->json($data);
     }
 
+    public function hadisByMukharrij(Request $request, string $key)
+    {
+        $page = $request->get('page', 1);
+        $limit = $request->get('limit', 10);
+
+        $data = $this->hadithService->getHadithsByMukharrij($key, (int) $page, (int) $limit);
+
+        return response()->json($data);
+    }
+
     public function searchHadis(Request $request)
     {
         $query = $request->get('q', '');
