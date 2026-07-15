@@ -39,16 +39,17 @@
             <div x-show="showSettings" x-collapse class="mt-4 space-y-4">
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-2">Jenis Font Arab</label>
-                    <select x-model="arabicFont" @change="updateFontPreview()" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    <select x-model="arabicFont" @change="saveSettings()" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500">
                         <option value="'LPMQ IsepMisbah', serif">LPMQ IsepMisbah</option>
                         <option value="'Amiri Quran', serif">Amiri Quran</option>
                         <option value="'Amiri', serif">Amiri</option>
                         <option value="'Scheherazade New', serif">Scheherazade New</option>
                         <option value="'Noto Naskh Arabic', serif">Noto Naskh Arabic</option>
                     </select>
-                    <div class="mt-2 bg-gray-50 rounded-lg p-3 text-center">
+                    <div class="mt-2 bg-gray-50 rounded-lg p-3 text-center overflow-hidden">
                         <p class="text-xs text-gray-500 mb-1">Preview:</p>
-                        <p class="text-2xl text-gray-800" :style="`font-family: ${arabicFont}`">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</p>
+                        <p class="text-gray-800 leading-relaxed" :style="`font-family: ${arabicFont}; font-size: ${arabicFontSize}%`">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</p>
+                        <p x-show="showLatin" class="text-xs text-teal-600 italic mt-1">Bismillāhir-raḥmānir-raḥīm</p>
                     </div>
                 </div>
 
@@ -56,12 +57,12 @@
                     <label class="block text-xs font-medium text-gray-500 mb-2">Ukuran Font Arab: <span x-text="arabicFontSize + '%'"></span></label>
                     <div class="flex items-center space-x-3">
                         <button @click="arabicFontSize = Math.max(80, arabicFontSize - 10); saveSettings()" class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-200 text-sm font-bold">-</button>
-                        <input type="range" x-model="arabicFontSize" @change="saveSettings()" min="80" max="200" step="10" class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-teal-600">
-                        <button @click="arabicFontSize = Math.min(200, arabicFontSize + 10); saveSettings()" class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-200 text-sm font-bold">+</button>
+                        <input type="range" x-model="arabicFontSize" @input="saveSettings()" min="80" max="250" step="10" class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-teal-600">
+                        <button @click="arabicFontSize = Math.min(250, arabicFontSize + 10); saveSettings()" class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-200 text-sm font-bold">+</button>
                     </div>
                     <div class="flex justify-between text-xs text-gray-400 mt-1">
-                        <span>Kecil</span>
-                        <span>Besar</span>
+                        <span>80%</span>
+                        <span>250%</span>
                     </div>
                 </div>
 
@@ -119,9 +120,9 @@
                             </button>
                         </div>
                     </div>
-                    <p class="text-right leading-loose text-gray-800 mb-2" :style="`font-family: ${arabicFont}; font-size: ${arabicFontSize}%`" x-text="ayah.arab"></p>
-                    <p x-show="showLatin" class="text-right text-sm text-gray-500 italic mb-2" x-text="ayah.latin || ''"></p>
-                    <p x-show="showTranslation" class="text-gray-600 text-sm border-t border-gray-100 pt-3" x-text="ayah.translation"></p>
+                    <p class="text-right leading-loose text-gray-800" :style="`font-family: ${arabicFont}; font-size: ${arabicFontSize}%`" x-text="ayah.arab"></p>
+                    <p x-show="showLatin" class="text-sm text-teal-600 italic mt-2 pl-10" x-text="transliterate(ayah.arab)"></p>
+                    <p x-show="showTranslation" class="text-gray-600 text-sm border-t border-gray-100 mt-3 pt-3" x-text="ayah.translation"></p>
                     <div x-show="showTafsir && ayah.tafsir?.kemenag?.short" class="mt-3 bg-gray-50 rounded-lg p-3">
                         <p class="text-xs font-medium text-gray-500 mb-1">Tafsir Kemenag:</p>
                         <p class="text-sm text-gray-700" x-text="ayah.tafsir?.kemenag?.short || ''"></p>
@@ -134,6 +135,69 @@
     <style>[x-collapse]{overflow:hidden}</style>
 
     <script>
+        const ARABIC_LATIN_MAP = {
+            '\u0627': 'a', '\u0628': 'b', '\u062A': 't', '\u062B': 'ts',
+            '\u062C': 'j', '\u062D': 'ḥ', '\u062E': 'kh', '\u062F': 'd',
+            '\u0630': 'dz', '\u0631': 'r', '\u0632': 'z', '\u0633': 's',
+            '\u0634': 'sy', '\u0635': 'ṣ', '\u0636': 'ḍ', '\u0637': 'ṭ',
+            '\u0638': 'ẓ', '\u0639': '\u2018', '\u063A': 'gh', '\u0641': 'f',
+            '\u0642': 'q', '\u0643': 'k', '\u0644': 'l', '\u0645': 'm',
+            '\u0646': 'n', '\u0647': 'h', '\u0648': 'w', '\u064A': 'y',
+            '\u0621': "'", '\u0622': '\u0101', '\u0623': 'a', '\u0625': 'i',
+            '\u0624': 'u', '\u0626': "'",
+            '\u064E': 'a', '\u064F': 'u', '\u0650': 'i', '\u0652': '',
+            '\u064B': 'an', '\u064C': 'un', '\u064D': 'in',
+            '\u0651': '', '\u0653': '', '\u0654': '', '\u0655': '',
+            '\u0670': '\u0101',
+            '\u0640': '',
+            ' ': ' ', '\u060C': ',', '\u061B': ';', '\u061F': '?',
+            '\u0660': '0', '\u0661': '1', '\u0662': '2', '\u0663': '3',
+            '\u0664': '4', '\u0665': '5', '\u0666': '6', '\u0667': '7',
+            '\u0668': '8', '\u0669': '9',
+        };
+
+        const SPECIAL_COMBOS = {
+            'اللّٰه': 'Allāh',
+            'اللّه': 'Allāh',
+            'بِسْمِ': 'Bismi',
+            'الرَّحْمٰنِ': 'ar-Raḥmān',
+            'الرَّحِيمِ': 'ar-Raḥīm',
+            'مُحَمَّدٌ': 'Muḥammad',
+            'مُحَمَّد': 'Muḥammad',
+            'رَسُولُ': 'Rasūlu',
+            'اللَّهِ': 'Allāh',
+            'رَبِّ': 'Rabbi',
+            'رَبَّ': 'Rabba',
+            'عَلِيٌّ': 'Aliyy',
+            'عَظِيمٌ': 'Aẓīm',
+        };
+
+        function transliterateArabic(text) {
+            if (!text) return '';
+
+            let result = text;
+
+            for (const [arabic, latin] of Object.entries(SPECIAL_COMBOS)) {
+                result = result.split(arabic).join(latin);
+            }
+
+            let latin = '';
+            for (let i = 0; i < result.length; i++) {
+                const char = result[i];
+                if (ARABIC_LATIN_MAP[char] !== undefined) {
+                    latin += ARABIC_LATIN_MAP[char];
+                } else if (char.charCodeAt(0) > 255) {
+                    latin += '';
+                } else {
+                    latin += char;
+                }
+            }
+
+            latin = latin.replace(/\s+/g, ' ').trim();
+
+            return latin;
+        }
+
         function surahReader(surahNumber) {
             return {
                 surah: null,
@@ -172,8 +236,8 @@
                     }));
                 },
 
-                updateFontPreview() {
-                    this.saveSettings();
+                transliterate(text) {
+                    return transliterateArabic(text);
                 },
 
                 async loadSurah() {
