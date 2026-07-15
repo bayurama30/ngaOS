@@ -32,12 +32,21 @@
             <template x-for="(item, index) in items" :key="index">
                 <a :href="`/quran/${item.surah_number}?ayah=${item.ayah_number}`" class="block bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition">
                     <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm font-medium text-teal-600" x-text="`${item.surah_name_latin} (${item.surah_name}`"></span>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm font-medium text-teal-600" x-text="item.surah_name_latin"></span>
+                            <span class="text-xs text-gray-400" x-text="item.surah_name"></span>
+                        </div>
                         <span class="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full" x-text="`Ayat ${item.ayah_number}`"></span>
                     </div>
                     <p class="text-right text-xl leading-loose text-gray-800 mb-2" style="font-family: 'LPMQ IsepMisbah', serif" x-text="item.arabic"></p>
                     <p class="text-sm text-gray-600 line-clamp-2" x-text="item.translation"></p>
-                    <div class="flex items-center justify-end mt-3">
+                    <div class="flex items-center justify-between mt-3 pt-2 border-t border-gray-50">
+                        <span class="text-xs text-gray-400 flex items-center">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span x-text="formatDate(item.timestamp)"></span>
+                        </span>
                         <button @click.prevent="removeMarked(index)" class="text-red-400 hover:text-red-600 p-1" title="Hapus dari daftar">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -55,17 +64,46 @@
                 items: [],
                 loading: true,
 
+                formatDate(isoString) {
+                    if (!isoString) return '';
+                    try {
+                        const date = new Date(isoString);
+                        const now = new Date();
+                        const diffMs = now - date;
+                        const diffMins = Math.floor(diffMs / 60000);
+                        const diffHours = Math.floor(diffMs / 3600000);
+                        const diffDays = Math.floor(diffMs / 86400000);
+
+                        if (diffMins < 1) return 'Baru saja';
+                        if (diffMins < 60) return `${diffMins} menit lalu`;
+                        if (diffHours < 24) return `${diffHours} jam lalu`;
+                        if (diffDays < 7) return `${diffDays} hari lalu`;
+
+                        return date.toLocaleDateString('id-ID', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                    } catch (e) {
+                        return '';
+                    }
+                },
+
                 async loadMarkedAyahs() {
                     const allMarked = [];
                     const surahCache = {};
 
                     for (let i = 0; i < localStorage.length; i++) {
                         const key = localStorage.key(i);
-                        if (key && key.startsWith('quran_bookmarks_')) {
+                        if (key && key.startsWith('quran_bookmarks_') && !key.includes('_ts_')) {
                             const surahNum = parseInt(key.replace('quran_bookmarks_', ''));
                             const ayahIndexes = JSON.parse(localStorage.getItem(key) || '[]');
                             
                             if (ayahIndexes.length === 0) continue;
+
+                            const timestamps = JSON.parse(localStorage.getItem(`quran_bookmarks_ts_${surahNum}`) || '{}');
 
                             if (!surahCache[surahNum]) {
                                 const cached = localStorage.getItem(`quran_surah_${surahNum}`);
@@ -104,13 +142,19 @@
                                     surah_name_latin: surahInfo?.name_latin || `Surat ${surahNum}`,
                                     surah_name: surahInfo?.name || '',
                                     arabic: ayah?.arab || '',
-                                    translation: ayah?.translation || ''
+                                    translation: ayah?.translation || '',
+                                    timestamp: timestamps[idx] || null
                                 });
                             });
                         }
                     }
                     
-                    allMarked.sort((a, b) => a.surah_number - b.surah_number || a.ayah_number - b.ayah_number);
+                    allMarked.sort((a, b) => {
+                        if (a.timestamp && b.timestamp) {
+                            return new Date(b.timestamp) - new Date(a.timestamp);
+                        }
+                        return a.surah_number - b.surah_number || a.ayah_number - b.ayah_number;
+                    });
                     this.items = allMarked;
                     this.loading = false;
                 },
@@ -120,16 +164,21 @@
                     
                     const item = this.items[index];
                     const key = `quran_bookmarks_${item.surah_number}`;
+                    const tsKey = `quran_bookmarks_ts_${item.surah_number}`;
                     const saved = JSON.parse(localStorage.getItem(key) || '[]');
+                    const timestamps = JSON.parse(localStorage.getItem(tsKey) || '{}');
                     const ayahIdx = item.ayah_number - 1;
                     const idx = saved.indexOf(ayahIdx);
                     
                     if (idx > -1) {
                         saved.splice(idx, 1);
+                        delete timestamps[ayahIdx];
                         if (saved.length === 0) {
                             localStorage.removeItem(key);
+                            localStorage.removeItem(tsKey);
                         } else {
                             localStorage.setItem(key, JSON.stringify(saved));
+                            localStorage.setItem(tsKey, JSON.stringify(timestamps));
                         }
                     }
                     

@@ -254,6 +254,18 @@
 
                 saveBookmarks() {
                     localStorage.setItem(`quran_bookmarks_${surahNumber}`, JSON.stringify(this.bookmarkedAyahs));
+                    let timestamps = JSON.parse(localStorage.getItem(`quran_bookmarks_ts_${surahNumber}`) || '{}');
+                    this.bookmarkedAyahs.forEach(idx => {
+                        if (!timestamps[idx]) {
+                            timestamps[idx] = new Date().toISOString();
+                        }
+                    });
+                    Object.keys(timestamps).forEach(key => {
+                        if (!this.bookmarkedAyahs.includes(parseInt(key))) {
+                            delete timestamps[key];
+                        }
+                    });
+                    localStorage.setItem(`quran_bookmarks_ts_${surahNumber}`, JSON.stringify(timestamps));
                 },
 
                 toggleBookmark(index) {
