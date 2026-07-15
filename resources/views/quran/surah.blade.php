@@ -39,22 +39,37 @@
             <div x-show="showSettings" x-collapse class="mt-4 space-y-4">
                 <div>
                     <label class="block text-xs font-medium text-gray-500 mb-2">Jenis Font Arab</label>
-                    <select x-model="arabicFont" @change="saveSettings()" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    <select x-model="arabicFont" @change="updateFontPreview()" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500">
                         <option value="'LPMQ IsepMisbah', serif">LPMQ IsepMisbah</option>
                         <option value="'Amiri Quran', serif">Amiri Quran</option>
                         <option value="'Amiri', serif">Amiri</option>
                         <option value="'Scheherazade New', serif">Scheherazade New</option>
                         <option value="'Noto Naskh Arabic', serif">Noto Naskh Arabic</option>
                     </select>
+                    <div class="mt-2 bg-gray-50 rounded-lg p-3 text-center">
+                        <p class="text-xs text-gray-500 mb-1">Preview:</p>
+                        <p class="text-2xl text-gray-800" :style="`font-family: ${arabicFont}`">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</p>
+                    </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-2">Ukuran Font Arab: <span x-text="arabicFontSize + 'px'"></span></label>
+                    <label class="block text-xs font-medium text-gray-500 mb-2">Ukuran Font Arab: <span x-text="arabicFontSize + '%'"></span></label>
                     <div class="flex items-center space-x-3">
-                        <button @click="arabicFontSize = Math.max(20, arabicFontSize - 2); saveSettings()" class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-200">-</button>
-                        <input type="range" x-model="arabicFontSize" @change="saveSettings()" min="20" max="60" step="2" class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-teal-600">
-                        <button @click="arabicFontSize = Math.min(60, arabicFontSize + 2); saveSettings()" class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-200">+</button>
+                        <button @click="arabicFontSize = Math.max(80, arabicFontSize - 10); saveSettings()" class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-200 text-sm font-bold">-</button>
+                        <input type="range" x-model="arabicFontSize" @change="saveSettings()" min="80" max="200" step="10" class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-teal-600">
+                        <button @click="arabicFontSize = Math.min(200, arabicFontSize + 10); saveSettings()" class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-200 text-sm font-bold">+</button>
                     </div>
+                    <div class="flex justify-between text-xs text-gray-400 mt-1">
+                        <span>Kecil</span>
+                        <span>Besar</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <label class="text-xs font-medium text-gray-500">Tampilkan Huruf Latin</label>
+                    <button @click="showLatin = !showLatin; saveSettings()" :class="['relative inline-flex h-6 w-11 items-center rounded-full transition', showLatin ? 'bg-teal-600' : 'bg-gray-200']">
+                        <span :class="['inline-block h-4 w-4 transform rounded-full bg-white transition', showLatin ? 'translate-x-6' : 'translate-x-1']"></span>
+                    </button>
                 </div>
 
                 <div class="flex items-center justify-between">
@@ -104,7 +119,8 @@
                             </button>
                         </div>
                     </div>
-                    <p class="text-right leading-loose text-gray-800 mb-3" :style="`font-family: ${arabicFont}; font-size: ${arabicFontSize}px`" x-text="ayah.arab"></p>
+                    <p class="text-right leading-loose text-gray-800 mb-2" :style="`font-family: ${arabicFont}; font-size: ${arabicFontSize}%`" x-text="ayah.arab"></p>
+                    <p x-show="showLatin" class="text-right text-sm text-gray-500 italic mb-2" x-text="ayah.latin || ''"></p>
                     <p x-show="showTranslation" class="text-gray-600 text-sm border-t border-gray-100 pt-3" x-text="ayah.translation"></p>
                     <div x-show="showTafsir && ayah.tafsir?.kemenag?.short" class="mt-3 bg-gray-50 rounded-lg p-3">
                         <p class="text-xs font-medium text-gray-500 mb-1">Tafsir Kemenag:</p>
@@ -127,7 +143,8 @@
                 currentAudio: null,
                 showSettings: false,
                 arabicFont: "'LPMQ IsepMisbah', serif",
-                arabicFontSize: 28,
+                arabicFontSize: 100,
+                showLatin: false,
                 showTranslation: true,
                 showTafsir: false,
 
@@ -138,7 +155,8 @@
                     if (saved) {
                         const s = JSON.parse(saved);
                         this.arabicFont = s.arabicFont || "'LPMQ IsepMisbah', serif";
-                        this.arabicFontSize = s.arabicFontSize || 28;
+                        this.arabicFontSize = s.arabicFontSize || 100;
+                        this.showLatin = s.showLatin || false;
                         this.showTranslation = s.showTranslation !== false;
                         this.showTafsir = s.showTafsir || false;
                     }
@@ -148,9 +166,14 @@
                     localStorage.setItem('quran_settings', JSON.stringify({
                         arabicFont: this.arabicFont,
                         arabicFontSize: this.arabicFontSize,
+                        showLatin: this.showLatin,
                         showTranslation: this.showTranslation,
                         showTafsir: this.showTafsir,
                     }));
+                },
+
+                updateFontPreview() {
+                    this.saveSettings();
                 },
 
                 async loadSurah() {
