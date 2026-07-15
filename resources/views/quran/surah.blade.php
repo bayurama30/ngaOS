@@ -22,6 +22,7 @@
             <p class="text-teal-100 text-sm mt-2" x-text="`${surah?.number_of_ayahs} Ayat`"></p>
         </div>
 
+        {{-- Pengaturan Tampilan --}}
         <div x-show="!loading && surah" class="bg-white rounded-xl p-4 mb-4 shadow-sm border border-gray-100">
             <button @click="showSettings = !showSettings" class="flex items-center justify-between w-full">
                 <div class="flex items-center">
@@ -49,7 +50,6 @@
                     <div class="mt-2 bg-gray-50 rounded-lg p-3 text-center overflow-hidden">
                         <p class="text-xs text-gray-500 mb-1">Preview:</p>
                         <p class="text-gray-800 leading-relaxed" :style="`font-family: ${arabicFont}; font-size: ${arabicFontSize}%`">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</p>
-                        <p x-show="showLatin" class="text-xs text-teal-600 italic mt-1">Bismillāhir-raḥmānir-raḥīm</p>
                     </div>
                 </div>
 
@@ -92,6 +92,44 @@
             </div>
         </div>
 
+        {{-- Pengaturan Audio --}}
+        <div x-show="!loading && surah" class="bg-white rounded-xl p-4 mb-4 shadow-sm border border-gray-100">
+            <button @click="showAudioSettings = !showAudioSettings" class="flex items-center justify-between w-full">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                    </svg>
+                    <span class="text-sm font-medium text-gray-700">Pengaturan Audio</span>
+                </div>
+                <svg :class="['w-4 h-4 text-gray-400 transition', showAudioSettings ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+
+            <div x-show="showAudioSettings" x-collapse class="mt-4 space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-3">Mode Audio Murottal</label>
+                    <div class="space-y-3">
+                        <label class="flex items-start p-3 rounded-lg border cursor-pointer transition" :class="audioMode === 'normal' ? 'border-teal-500 bg-teal-50' : 'border-gray-200 hover:border-gray-300'">
+                            <input type="radio" x-model="audioMode" value="normal" @change="saveSettings()" class="mt-0.5 text-teal-600 focus:ring-teal-500">
+                            <div class="ml-3">
+                                <span class="text-sm font-medium text-gray-800">Normal (Full Surat)</span>
+                                <p class="text-xs text-gray-500 mt-0.5">Audio murottal biasa, highlight per ayat (card abu-abu)</p>
+                            </div>
+                        </label>
+                        <label class="flex items-start p-3 rounded-lg border cursor-pointer transition" :class="audioMode === 'word-by-word' ? 'border-teal-500 bg-teal-50' : 'border-gray-200 hover:border-gray-300'">
+                            <input type="radio" x-model="audioMode" value="word-by-word" @change="saveSettings()" class="mt-0.5 text-teal-600 focus:ring-teal-500">
+                            <div class="ml-3">
+                                <span class="text-sm font-medium text-gray-800">Per Kata (Word-by-Word)</span>
+                                <p class="text-xs text-gray-500 mt-0.5">Audio per kata, highlight per kata sinkron dengan bacaan</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Audio Player --}}
         <div x-show="!loading && surah" class="bg-white rounded-xl p-4 mb-4 shadow-sm border border-gray-100">
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
@@ -105,7 +143,7 @@
                     </button>
                     <div>
                         <p class="font-medium text-gray-800">Audio Murottal</p>
-                        <p class="text-sm text-gray-500">Word-by-Word Sync</p>
+                        <p class="text-sm text-gray-500" x-text="audioMode === 'word-by-word' ? 'Word-by-Word Sync' : 'Normal'"></p>
                         <p x-show="currentPlayingAyah >= 0" class="text-xs text-amber-600 mt-0.5">
                             Sedang memutar: Ayat <span x-text="ayahs[currentPlayingAyah]?.ayah_number"></span>
                         </p>
@@ -117,6 +155,7 @@
             </div>
         </div>
 
+        {{-- Ayat --}}
         <div x-show="!loading && surah" class="space-y-4">
             <template x-for="(ayah, index) in ayahs" :key="index">
                 <div :id="`ayah-${ayah.ayah_number}`" 
@@ -155,10 +194,10 @@
                         </div>
                     </div>
                     <p class="text-right leading-loose text-gray-800" :style="`font-family: ${arabicFont}; font-size: ${arabicFontSize}%`">
-                        <template x-if="currentPlayingAyah !== index">
+                        <template x-if="currentPlayingAyah !== index || audioMode === 'normal'">
                             <span x-text="ayah.arab"></span>
                         </template>
-                        <template x-if="currentPlayingAyah === index">
+                        <template x-if="currentPlayingAyah === index && audioMode === 'word-by-word'">
                             <span>
                                 <template x-for="(word, wIndex) in ayah.arab.split(' ')" :key="wIndex">
                                     <span :class="wIndex === highlightedWordIndex ? 'bg-yellow-200 rounded px-0.5 transition-colors duration-100' : 'transition-colors duration-100'"
@@ -230,12 +269,14 @@
                 ayahs: [],
                 loading: true,
                 showSettings: false,
+                showAudioSettings: false,
                 arabicFont: "'LPMQ IsepMisbah', serif",
                 arabicFontSize: 100,
                 showLatin: false,
                 showTranslation: true,
                 showTafsir: false,
                 autoScroll: true,
+                audioMode: 'normal',
                 bookmarkedAyahs: [],
                 isPlayingFull: false,
                 currentPlayingAyah: -1,
@@ -259,6 +300,7 @@
                         this.showTranslation = s.showTranslation !== false;
                         this.showTafsir = s.showTafsir || false;
                         this.autoScroll = s.autoScroll !== false;
+                        this.audioMode = s.audioMode || 'normal';
                     }
                 },
 
@@ -270,6 +312,7 @@
                         showTranslation: this.showTranslation,
                         showTafsir: this.showTafsir,
                         autoScroll: this.autoScroll,
+                        audioMode: this.audioMode,
                     }));
                 },
 
@@ -408,7 +451,35 @@
                         this.scrollToAyah(ayah.ayah_number);
                     }
 
-                    await this.playAyahWithWordSync(index);
+                    await this.playAyahAudio(index);
+                },
+
+                async playAyahAudio(index) {
+                    if (this.audioMode === 'word-by-word') {
+                        await this.playAyahWithWordSync(index);
+                    } else {
+                        await this.playAyahNormal(index);
+                    }
+                },
+
+                async playAyahNormal(index) {
+                    const ayah = this.ayahs[index];
+                    if (!ayah?.audio_url) return;
+
+                    return new Promise((resolve) => {
+                        const audio = new Audio(ayah.audio_url);
+                        this.currentAudio = audio;
+
+                        audio.addEventListener('ended', () => {
+                            resolve();
+                        });
+
+                        audio.addEventListener('error', () => {
+                            resolve();
+                        });
+
+                        audio.play().catch(() => resolve());
+                    });
                 },
 
                 async playAyahWithWordSync(index) {
@@ -540,7 +611,7 @@
                             this.scrollToAyah(this.ayahs[i].ayah_number);
                         }
 
-                        await this.playAyahWithWordSync(i);
+                        await this.playAyahAudio(i);
 
                         if (this.stopRequested) break;
 
