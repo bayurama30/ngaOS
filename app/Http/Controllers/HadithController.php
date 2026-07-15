@@ -13,27 +13,15 @@ class HadithController extends Controller
 
     public function index()
     {
-        $books = $this->hadithService->getBooks();
-
-        return view('hadith.index', [
-            'books' => $books,
-        ]);
+        return view('hadith.index');
     }
 
-    public function book(string $slug)
+    public function show(int $id)
     {
-        return view('hadith.book', [
-            'bookSlug' => $slug,
-        ]);
-    }
-
-    public function hadith(string $slug, int $number)
-    {
-        $hadith = $this->hadithService->getHadith($slug, $number);
+        $hadith = $this->hadithService->getHadith($id);
 
         return view('hadith.show', [
-            'bookSlug' => $slug,
-            'hadithNumber' => $number,
+            'hadithId' => $id,
             'hadith' => $hadith,
         ]);
     }
@@ -41,20 +29,9 @@ class HadithController extends Controller
     public function search(Request $request)
     {
         $query = $request->get('q', '');
-        $book = $request->get('book');
-
-        if (strlen($query) < 3) {
-            return view('hadith.search', [
-                'query' => $query,
-                'results' => collect(),
-            ]);
-        }
-
-        $results = $this->hadithService->search($query, $book);
 
         return view('hadith.search', [
             'query' => $query,
-            'results' => $results,
         ]);
     }
 }

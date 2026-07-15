@@ -22,8 +22,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Hadith Routes
     Route::get('/hadith', [HadithController::class, 'index'])->name('hadith.index');
-    Route::get('/hadith/{slug}', [HadithController::class, 'book'])->name('hadith.book');
-    Route::get('/hadith/{slug}/{number}', [HadithController::class, 'hadith'])->name('hadith.show');
+    Route::get('/hadith/{id}', [HadithController::class, 'show'])->name('hadith.show');
     Route::get('/hadith/search', [HadithController::class, 'search'])->name('hadith.search');
 
     // Prayer Times Routes
