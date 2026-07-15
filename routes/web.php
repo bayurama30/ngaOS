@@ -18,14 +18,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Quran Routes
     Route::get('/quran', [QuranController::class, 'index'])->name('quran.index');
     Route::get('/quran/marked', [QuranController::class, 'marked'])->name('quran.marked');
-    Route::get('/quran/{number}', [QuranController::class, 'surah'])->name('quran.surah');
     Route::get('/quran/search', [QuranController::class, 'search'])->name('quran.search');
+    Route::get('/quran/{number}', [QuranController::class, 'surah'])->name('quran.surah')->where('number', '[0-9]+');
 
     // Hadith Routes
     Route::get('/hadith', [HadithController::class, 'index'])->name('hadith.index');
-    Route::get('/hadith/collection/{key}', [HadithController::class, 'collection'])->name('hadith.collection');
-    Route::get('/hadith/{id}', [HadithController::class, 'show'])->name('hadith.show');
     Route::get('/hadith/search', [HadithController::class, 'search'])->name('hadith.search');
+    Route::get('/hadith/collection/{key}', [HadithController::class, 'collection'])->name('hadith.collection');
+    Route::get('/hadith/{id}', [HadithController::class, 'show'])->name('hadith.show')->where('id', '[0-9]+');
 
     // Prayer Times Routes
     Route::get('/prayer', [PrayerTimeController::class, 'index'])->name('prayer.index');
