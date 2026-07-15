@@ -224,17 +224,36 @@
                         const lng = position.coords.longitude;
                         const tz = this.getTimezoneFromCoords(lat, lng);
 
-                        const latStr = lat.toFixed(0);
-                        const cityResponse = await fetch(`/api/muslim/city/search?q=${encodeURIComponent(latStr)}`);
-                        const cityData = await cityResponse.json();
+                        const cityName = await this.reverseGeocode(lat, lng);
+                        
+                        if (cityName) {
+                            const keywords = [
+                                cityName,
+                                cityName.replace('KOTA ', '').replace('KAB. ', '').replace('KABUPATEN ', ''),
+                                cityName.split(' ').pop()
+                            ];
 
-                        if (Array.isArray(cityData) && cityData.length > 0) {
-                            this.cityId = cityData[0].id;
-                            await this.fetchPrayerTimes(this.cityId, tz);
-                        } else {
-                            this.location = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-                            this.nextPrayer = { name: 'Dzuhur', time: '12:00', remaining: '--' };
+                            for (const keyword of keywords) {
+                                if (!keyword || keyword.length < 3) continue;
+                                
+                                const cityResponse = await fetch(`/api/muslim/city/search?q=${encodeURIComponent(keyword)}`);
+                                const cityData = await cityResponse.json();
+
+                                if (Array.isArray(cityData) && cityData.length > 0) {
+                                    const match = cityData.find(c => 
+                                        c.lokasi.toUpperCase().includes(cityName.toUpperCase()) ||
+                                        cityName.toUpperCase().includes(c.lokasi.toUpperCase())
+                                    ) || cityData[0];
+
+                                    this.cityId = match.id;
+                                    await this.fetchPrayerTimes(this.cityId, tz);
+                                    return;
+                                }
+                            }
                         }
+
+                        this.location = 'Atur lokasi di Profil';
+                        this.nextPrayer = { name: 'Dzuhur', time: '12:00', remaining: '--' };
                     } catch (error) {
                         console.error('Error detecting location:', error);
                         this.location = 'Atur lokasi di Profil';
@@ -243,11 +262,21 @@
                     this.loading = false;
                 },
 
+                async reverseGeocode(lat, lng) {
+                    try {
+                        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10&addressdetails=1`, {
+                            headers: { 'Accept-Language': 'id' }
+                        });
+                        const data = await response.json();
+                        return data.address?.city || data.address?.regency || data.address?.county || data.address?.state || '';
+                    } catch (error) {
+                        return '';
+                    }
+                },
+
                 getTimezoneFromCoords(lat, lng) {
-                    if (lng >= 95 && lng < 105) return 'Asia/Jakarta';
-                    if (lng >= 105 && lng < 120) return 'Asia/Jakarta';
-                    if (lng >= 120 && lng < 135) return 'Asia/Makassar';
-                    if (lng >= 135) return 'Asia/Jayapura';
+                    if (lng >= 140) return 'Asia/Jayapura';
+                    if (lng >= 120) return 'Asia/Makassar';
                     return 'Asia/Jakarta';
                 },
 

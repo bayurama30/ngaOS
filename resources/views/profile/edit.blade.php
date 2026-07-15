@@ -88,7 +88,7 @@
                 <div>
                     <p class="text-xs text-gray-400">Atau cari kota manual:</p>
                     <div class="relative mt-1">
-                        <input type="text" x-model="citySearch" @input.debounce.300ms="searchCity()" placeholder="Cari kota..." class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm">
+                        <input type="text" x-model="citySearch" @input.debounce.500ms="searchCity()" placeholder="Cari kota/kabupaten..." class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm">
                         
                         <div x-show="searchResults.length > 0" class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
                             <template x-for="city in searchResults" :key="city.id">
@@ -154,13 +154,17 @@
                         this.lng = position.coords.longitude.toFixed(7);
                         this.detectedTimezone = this.getTimezoneFromCoords(position.coords.latitude, position.coords.longitude);
 
-                        await this.findNearestCity(position.coords.latitude, position.coords.longitude);
+                        const cityName = await this.reverseGeocode(position.coords.latitude, position.coords.longitude);
+                        
+                        if (cityName) {
+                            await this.findCityInDatabase(cityName);
+                        }
 
                         if (this.selectedCityName) {
                             this.detectStatus = `Lokasi terdeteksi: ${this.selectedCityName}`;
                             this.detectStatusType = 'success';
                         } else {
-                            this.detectStatus = 'Lokasi terdeteksi, namun kota tidak ditemukan di database. Coba cari manual.';
+                            this.detectStatus = 'Kota terdeteksi: ' + (cityName || 'tidak diketahui') + '. Pilih manual dari daftar di bawah.';
                             this.detectStatusType = 'error';
                         }
                     } catch (error) {
@@ -178,101 +182,66 @@
                     this.detecting = false;
                 },
 
+                async reverseGeocode(lat, lng) {
+                    try {
+                        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10&addressdetails=1`, {
+                            headers: {
+                                'Accept-Language': 'id'
+                            }
+                        });
+                        const data = await response.json();
+                        
+                        const city = data.address?.city || 
+                                     data.address?.regency || 
+                                     data.address?.county ||
+                                     data.address?.state || 
+                                     '';
+                        
+                        return city;
+                    } catch (error) {
+                        console.error('Reverse geocode error:', error);
+                        return '';
+                    }
+                },
+
+                async findCityInDatabase(cityName) {
+                    try {
+                        const keywords = [
+                            cityName,
+                            cityName.replace('KOTA ', '').replace('KAB. ', '').replace('KABUPATEN ', ''),
+                            cityName.split(' ').pop()
+                        ];
+
+                        for (const keyword of keywords) {
+                            if (!keyword || keyword.length < 3) continue;
+
+                            const response = await fetch(`/api/muslim/city/search?q=${encodeURIComponent(keyword)}`);
+                            const data = await response.json();
+
+                            if (Array.isArray(data) && data.length > 0) {
+                                const match = data.find(c => 
+                                    c.lokasi.toUpperCase().includes(cityName.toUpperCase()) ||
+                                    cityName.toUpperCase().includes(c.lokasi.toUpperCase())
+                                ) || data[0];
+
+                                this.selectedCityId = match.id;
+                                this.selectedCityName = match.lokasi;
+                                return;
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error finding city:', error);
+                    }
+                },
+
                 getTimezoneFromCoords(lat, lng) {
                     if (lng >= 140) return 'Asia/Jayapura';
                     if (lng >= 120) return 'Asia/Makassar';
                     return 'Asia/Jakarta';
                 },
 
-                async findNearestCity(lat, lng) {
-                    try {
-                        const cities = await this.loadAllCities();
-                        
-                        if (!cities || cities.length === 0) return;
-
-                        let nearestCity = null;
-                        let minDistance = Infinity;
-
-                        for (const city of cities) {
-                            const cityLat = parseFloat(city.lat || 0);
-                            const cityLng = parseFloat(city.lng || 0);
-                            
-                            if (cityLat === 0 && cityLng === 0) continue;
-
-                            const distance = this.calculateDistance(lat, lng, cityLat, cityLng);
-                            
-                            if (distance < minDistance) {
-                                minDistance = distance;
-                                nearestCity = city;
-                            }
-                        }
-
-                        if (nearestCity) {
-                            this.selectedCityId = nearestCity.id;
-                            this.selectedCityName = nearestCity.lokasi;
-                        }
-                    } catch (error) {
-                        console.error('Error finding nearest city:', error);
-                        await this.findCityByKeyword(lat);
-                    }
-                },
-
-                async loadAllCities() {
-                    try {
-                        const cacheKey = 'all_cities_cache';
-                        const cached = sessionStorage.getItem(cacheKey);
-                        
-                        if (cached) {
-                            return JSON.parse(cached);
-                        }
-
-                        const response = await fetch('/api/muslim/city/all');
-                        const data = await response.json();
-                        
-                        if (Array.isArray(data)) {
-                            sessionStorage.setItem(cacheKey, JSON.stringify(data));
-                            return data;
-                        }
-                        
-                        return [];
-                    } catch (error) {
-                        console.error('Error loading cities:', error);
-                        return [];
-                    }
-                },
-
-                calculateDistance(lat1, lon1, lat2, lon2) {
-                    const R = 6371;
-                    const dLat = this.deg2rad(lat2 - lat1);
-                    const dLon = this.deg2rad(lon2 - lon1);
-                    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                              Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) *
-                              Math.sin(dLon/2) * Math.sin(dLon/2);
-                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-                    return R * c;
-                },
-
-                deg2rad(deg) {
-                    return deg * (Math.PI/180);
-                },
-
-                async findCityByKeyword(lat) {
-                    try {
-                        const keyword = lat < -2 ? 'selatan' : 'utara';
-                        const response = await fetch(`/api/muslim/city/search?q=${encodeURIComponent(keyword)}`);
-                        const data = await response.json();
-                        
-                        if (Array.isArray(data) && data.length > 0) {
-                            this.selectedCityId = data[0].id;
-                            this.selectedCityName = data[0].lokasi;
-                        }
-                    } catch (error) {
-                        console.error('Error:', error);
-                    }
-                },
-
                 async searchCity() {
-                    if (this.citySearch.length < 2) {
+                    if (this.citySearch.length < 3) {
                         this.searchResults = [];
                         return;
                     }
@@ -293,6 +262,7 @@
                     this.selectedCityName = city.lokasi;
                     this.citySearch = '';
                     this.searchResults = [];
+                    this.detectStatus = '';
                 },
 
                 clearLocation() {
@@ -301,6 +271,7 @@
                     this.lat = '';
                     this.lng = '';
                     this.detectedTimezone = 'Asia/Jakarta';
+                    this.detectStatus = '';
                 }
             };
         }
