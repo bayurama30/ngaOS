@@ -60,10 +60,13 @@
                         <input type="range" x-model="arabicFontSize" @input="saveSettings()" min="80" max="250" step="10" class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-teal-600">
                         <button @click="arabicFontSize = Math.min(250, arabicFontSize + 10); saveSettings()" class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-200 text-sm font-bold">+</button>
                     </div>
-                    <div class="flex justify-between text-xs text-gray-400 mt-1">
-                        <span>80%</span>
-                        <span>250%</span>
-                    </div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <label class="text-xs font-medium text-gray-500">Auto-Scroll Saat Audio</label>
+                    <button @click="autoScroll = !autoScroll; saveSettings()" :class="['relative inline-flex h-6 w-11 items-center rounded-full transition', autoScroll ? 'bg-teal-600' : 'bg-gray-200']">
+                        <span :class="['inline-block h-4 w-4 transform rounded-full bg-white transition', autoScroll ? 'translate-x-6' : 'translate-x-1']"></span>
+                    </button>
                 </div>
 
                 <div class="flex items-center justify-between">
@@ -92,20 +95,23 @@
         <div x-show="!loading && surah" class="bg-white rounded-xl p-4 mb-4 shadow-sm border border-gray-100">
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                    <button @click="toggleAudio()" class="w-10 h-10 bg-teal-600 rounded-full flex items-center justify-center text-white mr-3">
-                        <template x-if="!playing">
+                    <button @click="toggleFullSurah()" class="w-10 h-10 bg-teal-600 rounded-full flex items-center justify-center text-white mr-3">
+                        <template x-if="!isPlayingFull">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                         </template>
-                        <template x-if="playing">
+                        <template x-if="isPlayingFull">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
                         </template>
                     </button>
                     <div>
                         <p class="font-medium text-gray-800">Audio Murottal</p>
                         <p class="text-sm text-gray-500">Muhammad Thaha</p>
+                        <p x-show="currentPlayingAyah >= 0" class="text-xs text-amber-600 mt-0.5">
+                            Sedang memutar: Ayat <span x-text="ayahs[currentPlayingAyah]?.ayah_number"></span>
+                        </p>
                     </div>
                 </div>
-                <button @click="stopAudio()" x-show="playing" class="text-red-500 hover:text-red-700 p-2">
+                <button @click="stopFullSurah()" x-show="isPlayingFull" class="text-red-500 hover:text-red-700 p-2">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
                 </button>
             </div>
@@ -113,19 +119,31 @@
 
         <div x-show="!loading && surah" class="space-y-4">
             <template x-for="(ayah, index) in ayahs" :key="index">
-                <div :id="`ayah-${ayah.ayah_number}`" class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 scroll-mt-24">
+                <div :id="`ayah-${ayah.ayah_number}`" 
+                     :class="[
+                         'rounded-xl p-5 shadow-sm border transition-all duration-500 scroll-mt-24',
+                         currentPlayingAyah === index 
+                             ? 'bg-gray-100 border-gray-200 shadow-md' 
+                             : 'bg-white border-gray-100'
+                     ]">
                     <div class="flex items-center justify-between mb-3">
                         <div class="flex items-center space-x-2">
-                            <div class="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center">
-                                <span class="text-teal-700 text-xs font-bold" x-text="ayah.ayah_number"></span>
+                            <div :class="[
+                                'w-8 h-8 rounded-full flex items-center justify-center',
+                                currentPlayingAyah === index ? 'bg-amber-200' : 'bg-teal-100'
+                            ]">
+                                <span :class="[
+                                    'text-xs font-bold',
+                                    currentPlayingAyah === index ? 'text-amber-700' : 'text-teal-700'
+                                ]" x-text="ayah.ayah_number"></span>
                             </div>
                         </div>
                         <div class="flex items-center space-x-1">
-                            <button @click="playAyah(index)" class="w-9 h-9 rounded-full flex items-center justify-center transition" :class="playingAyah === index ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-teal-100 hover:text-teal-600'">
-                                <template x-if="playingAyah !== index">
+                            <button @click="playSingleAyah(index)" class="w-9 h-9 rounded-full flex items-center justify-center transition" :class="currentPlayingAyah === index ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-teal-100 hover:text-teal-600'">
+                                <template x-if="currentPlayingAyah !== index">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                                 </template>
-                                <template x-if="playingAyah === index">
+                                <template x-if="currentPlayingAyah === index">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
                                 </template>
                             </button>
@@ -136,7 +154,19 @@
                             </button>
                         </div>
                     </div>
-                    <p class="text-right leading-loose text-gray-800" :style="`font-family: ${arabicFont}; font-size: ${arabicFontSize}%`" x-text="ayah.arab"></p>
+                    <p class="text-right leading-loose text-gray-800" :style="`font-family: ${arabicFont}; font-size: ${arabicFontSize}%`">
+                        <template x-if="currentPlayingAyah !== index">
+                            <span x-text="ayah.arab"></span>
+                        </template>
+                        <template x-if="currentPlayingAyah === index">
+                            <span>
+                                <template x-for="(word, wIndex) in ayah.arab.split(' ')" :key="wIndex">
+                                    <span :class="wIndex <= highlightedWordIndex ? 'bg-yellow-200 rounded px-0.5 transition-colors duration-200' : 'transition-colors duration-200'"
+                                          x-text="word + ' '"></span>
+                                </template>
+                            </span>
+                        </template>
+                    </p>
                     <p x-show="showLatin" class="text-sm text-teal-600 italic mt-2 pl-10" x-text="transliterate(ayah.arab)"></p>
                     <p x-show="showTranslation" class="text-gray-600 text-sm border-t border-gray-100 mt-3 pt-3" x-text="ayah.translation"></p>
                     <div x-show="showTafsir && ayah.tafsir?.kemenag?.short" class="mt-3 bg-gray-50 rounded-lg p-3">
@@ -164,22 +194,14 @@
             '\u064E': 'a', '\u064F': 'u', '\u0650': 'i', '\u0652': '',
             '\u064B': 'an', '\u064C': 'un', '\u064D': 'in',
             '\u0651': '', '\u0653': '', '\u0654': '', '\u0655': '',
-            '\u0670': '\u0101',
-            '\u0640': '',
+            '\u0670': '\u0101', '\u0640': '',
             ' ': ' ', '\u060C': ',', '\u061B': ';', '\u061F': '?',
-            '\u0660': '0', '\u0661': '1', '\u0662': '2', '\u0663': '3',
-            '\u0664': '4', '\u0665': '5', '\u0666': '6', '\u0667': '7',
-            '\u0668': '8', '\u0669': '9',
         };
 
         const SPECIAL_COMBOS = {
             '\u0627\u0644\u0644\u0651\u0670\u0647': 'All\u0101h',
             '\u0627\u0644\u0644\u0651\u0647': 'All\u0101h',
             '\u0628\u0650\u0633\u0652\u0645\u0650': 'Bismi',
-            '\u0627\u0644\u0631\u0651\u064E\u062D\u0652\u0645\u0670\u0646\u0650': 'ar-Ra\u1E25m\u0101n',
-            '\u0627\u0644\u0631\u0651\u064E\u062D\u0650\u064A\u0652\u0645\u0650': 'ar-Ra\u1E25\u012Bm',
-            '\u0645\u064F\u062D\u064E\u0645\u0651\u064E\u062F\u064C': 'Mu\u1E25ammad',
-            '\u0645\u064F\u062D\u064E\u0645\u0651\u064E\u062F': 'Mu\u1E25ammad',
         };
 
         function transliterateArabic(text) {
@@ -207,16 +229,19 @@
                 surah: null,
                 ayahs: [],
                 loading: true,
-                playing: false,
-                playingAyah: -1,
-                currentAudio: null,
                 showSettings: false,
                 arabicFont: "'LPMQ IsepMisbah', serif",
                 arabicFontSize: 100,
                 showLatin: false,
                 showTranslation: true,
                 showTafsir: false,
+                autoScroll: true,
                 bookmarkedAyahs: [],
+                isPlayingFull: false,
+                currentPlayingAyah: -1,
+                highlightedWordIndex: -1,
+                currentAudio: null,
+                stopRequested: false,
 
                 init() {
                     this.loadSettings();
@@ -232,6 +257,7 @@
                         this.showLatin = s.showLatin || false;
                         this.showTranslation = s.showTranslation !== false;
                         this.showTafsir = s.showTafsir || false;
+                        this.autoScroll = s.autoScroll !== false;
                     }
                 },
 
@@ -242,6 +268,7 @@
                         showLatin: this.showLatin,
                         showTranslation: this.showTranslation,
                         showTafsir: this.showTafsir,
+                        autoScroll: this.autoScroll,
                     }));
                 },
 
@@ -316,41 +343,133 @@
                     this.loading = false;
                 },
 
-                toggleAudio() {
-                    if (this.playing) {
-                        this.stopAudio();
-                    } else {
-                        this.playingAyah = -1;
-                        this.currentAudio = new Audio(`https://cdn.myquran.com/audio/surah/${surahNumber}.mp3`);
-                        this.currentAudio.play();
-                        this.playing = true;
-                        this.currentAudio.onended = () => this.playing = false;
+                scrollToAyah(ayahNumber) {
+                    const el = document.getElementById(`ayah-${ayahNumber}`);
+                    if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
                 },
 
-                stopAudio() {
-                    this.currentAudio?.pause();
-                    this.currentAudio = null;
-                    this.playing = false;
-                    this.playingAyah = -1;
+                sleep(ms) {
+                    return new Promise(resolve => setTimeout(resolve, ms));
                 },
 
-                playAyah(index) {
-                    if (this.playingAyah === index) {
-                        this.stopAudio();
+                async playSingleAyah(index) {
+                    if (this.currentPlayingAyah === index) {
+                        this.stopFullSurah();
                         return;
                     }
 
-                    this.currentAudio?.pause();
-                    this.playing = false;
+                    this.stopFullSurah();
+                    await this.sleep(100);
+
+                    this.currentPlayingAyah = index;
+                    this.highlightedWordIndex = -1;
 
                     const ayah = this.ayahs[index];
-                    if (ayah?.audio_url) {
-                        this.currentAudio = new Audio(ayah.audio_url);
-                        this.currentAudio.play();
-                        this.playingAyah = index;
-                        this.currentAudio.onended = () => this.playingAyah = -1;
+                    if (!ayah?.audio_url) return;
+
+                    if (this.autoScroll) {
+                        this.scrollToAyah(ayah.ayah_number);
                     }
+
+                    await this.playAyahWithHighlight(index);
+                },
+
+                async playAyahWithHighlight(index) {
+                    const ayah = this.ayahs[index];
+                    if (!ayah?.audio_url) return;
+
+                    return new Promise((resolve) => {
+                        const audio = new Audio(ayah.audio_url);
+                        this.currentAudio = audio;
+
+                        audio.addEventListener('loadedmetadata', () => {
+                            const words = ayah.arab.split(' ').filter(w => w.trim());
+                            const duration = audio.duration * 1000;
+                            const timePerWord = duration / words.length;
+
+                            let wordIndex = 0;
+                            const highlightInterval = setInterval(() => {
+                                if (wordIndex < words.length && !this.stopRequested) {
+                                    this.highlightedWordIndex = wordIndex;
+                                    wordIndex++;
+                                } else {
+                                    clearInterval(highlightInterval);
+                                }
+                            }, timePerWord);
+
+                            audio.addEventListener('ended', () => {
+                                clearInterval(highlightInterval);
+                                this.highlightedWordIndex = -1;
+                                resolve();
+                            });
+
+                            audio.addEventListener('error', () => {
+                                clearInterval(highlightInterval);
+                                this.highlightedWordIndex = -1;
+                                resolve();
+                            });
+                        });
+
+                        audio.addEventListener('error', () => {
+                            this.highlightedWordIndex = -1;
+                            resolve();
+                        });
+
+                        audio.play().catch(() => {
+                            this.highlightedWordIndex = -1;
+                            resolve();
+                        });
+                    });
+                },
+
+                async toggleFullSurah() {
+                    if (this.isPlayingFull) {
+                        this.stopFullSurah();
+                    } else {
+                        this.playFullSurah();
+                    }
+                },
+
+                async playFullSurah() {
+                    this.isPlayingFull = true;
+                    this.stopRequested = false;
+
+                    for (let i = 0; i < this.ayahs.length; i++) {
+                        if (this.stopRequested) break;
+
+                        this.currentPlayingAyah = i;
+                        this.highlightedWordIndex = -1;
+
+                        if (this.autoScroll) {
+                            this.scrollToAyah(this.ayahs[i].ayah_number);
+                        }
+
+                        await this.playAyahWithHighlight(i);
+
+                        if (this.stopRequested) break;
+
+                        if (i < this.ayahs.length - 1) {
+                            await this.sleep(500);
+                        }
+                    }
+
+                    this.currentPlayingAyah = -1;
+                    this.highlightedWordIndex = -1;
+                    this.isPlayingFull = false;
+                    this.stopRequested = false;
+                },
+
+                stopFullSurah() {
+                    this.stopRequested = true;
+                    if (this.currentAudio) {
+                        this.currentAudio.pause();
+                        this.currentAudio = null;
+                    }
+                    this.currentPlayingAyah = -1;
+                    this.highlightedWordIndex = -1;
+                    this.isPlayingFull = false;
                 }
             };
         }
