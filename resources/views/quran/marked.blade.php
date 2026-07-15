@@ -30,7 +30,7 @@
 
         <div x-show="!loading && items.length > 0" class="space-y-3">
             <template x-for="(item, index) in items" :key="index">
-                <a :href="`/quran/${item.surah_number}`" class="block bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition">
+                <a :href="`/quran/${item.surah_number}?ayah=${item.ayah_number}`" class="block bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-sm font-medium text-teal-600" x-text="`${item.surah_name_latin} (${item.surah_name}`"></span>
                         <span class="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full" x-text="`Ayat ${item.ayah_number}`"></span>

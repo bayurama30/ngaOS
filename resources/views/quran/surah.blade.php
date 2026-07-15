@@ -113,7 +113,7 @@
 
         <div x-show="!loading && surah" class="space-y-4">
             <template x-for="(ayah, index) in ayahs" :key="index">
-                <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                <div :id="`ayah-${ayah.ayah_number}`" class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 scroll-mt-24">
                     <div class="flex items-center justify-between mb-3">
                         <div class="flex items-center space-x-2">
                             <div class="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center">
@@ -284,6 +284,19 @@
                                 number_of_ayahs: data.number_of_ayahs,
                                 ayahs: data.ayahs
                             }));
+
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const scrollToAyah = urlParams.get('ayah');
+                            if (scrollToAyah) {
+                                setTimeout(() => {
+                                    const el = document.getElementById(`ayah-${scrollToAyah}`);
+                                    if (el) {
+                                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                        el.classList.add('ring-2', 'ring-teal-400', 'ring-offset-2');
+                                        setTimeout(() => el.classList.remove('ring-2', 'ring-teal-400', 'ring-offset-2'), 3000);
+                                    }
+                                }, 500);
+                            }
                         }
                     } catch (error) {
                         console.error('Error loading surah:', error);
