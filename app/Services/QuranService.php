@@ -33,9 +33,45 @@ class QuranService
         $cacheKey = "quran:surah:{$number}";
 
         return Cache::remember($cacheKey, $this->cacheTtl, function () use ($number) {
-            $data = $this->api->get("/quran/{$number}");
+            $allAyahs = [];
+            $page = 1;
+            $limit = 50;
+            $surahInfo = null;
 
-            return $data;
+            do {
+                $response = $this->api->get("/quran/{$number}", [
+                    'page' => $page,
+                    'limit' => $limit,
+                ]);
+
+                if (!$response) break;
+
+                if (!$surahInfo && isset($response['number'])) {
+                    $surahInfo = [
+                        'number' => $response['number'],
+                        'name' => $response['name'],
+                        'name_latin' => $response['name_latin'],
+                        'number_of_ayahs' => $response['number_of_ayahs'],
+                        'translation' => $response['translation'],
+                        'revelation' => $response['revelation'],
+                        'description' => $response['description'] ?? '',
+                        'audio_url' => $response['audio_url'] ?? '',
+                    ];
+                }
+
+                if (isset($response['ayahs']) && is_array($response['ayahs'])) {
+                    $allAyahs = array_merge($allAyahs, $response['ayahs']);
+                }
+
+                $totalAyahs = $surahInfo['number_of_ayahs'] ?? 0;
+                $page++;
+            } while (count($allAyahs) < $totalAyahs && $page <= 100);
+
+            if (!$surahInfo) return null;
+
+            $surahInfo['ayahs'] = $allAyahs;
+
+            return $surahInfo;
         });
     }
 
