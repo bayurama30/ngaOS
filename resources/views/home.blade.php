@@ -199,9 +199,61 @@
                 location: 'Mendeteksi lokasi...',
                 date: '',
                 loading: true,
+                cityId: '{{ auth()->user()->city_id ?? "" }}',
+                timezone: '{{ auth()->user()->timezone ?? "" }}',
+
                 async loadPrayerTimes() {
+                    if (!this.cityId) {
+                        await this.detectAndLoad();
+                        return;
+                    }
+
+                    await this.fetchPrayerTimes(this.cityId, this.timezone || 'Asia/Jakarta');
+                },
+
+                async detectAndLoad() {
                     try {
-                        const response = await fetch('/api/muslim/prayer?city_id={{ auth()->user()->city_id ?? "" }}&tz={{ auth()->user()->timezone ?? "Asia/Jakarta" }}');
+                        const position = await new Promise((resolve, reject) => {
+                            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                                enableHighAccuracy: true,
+                                timeout: 10000
+                            });
+                        });
+
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        const tz = this.getTimezoneFromCoords(lat, lng);
+
+                        const latStr = lat.toFixed(0);
+                        const cityResponse = await fetch(`/api/muslim/city/search?q=${encodeURIComponent(latStr)}`);
+                        const cityData = await cityResponse.json();
+
+                        if (Array.isArray(cityData) && cityData.length > 0) {
+                            this.cityId = cityData[0].id;
+                            await this.fetchPrayerTimes(this.cityId, tz);
+                        } else {
+                            this.location = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+                            this.nextPrayer = { name: 'Dzuhur', time: '12:00', remaining: '--' };
+                        }
+                    } catch (error) {
+                        console.error('Error detecting location:', error);
+                        this.location = 'Atur lokasi di Profil';
+                        this.nextPrayer = { name: 'Dzuhur', time: '12:00', remaining: '--' };
+                    }
+                    this.loading = false;
+                },
+
+                getTimezoneFromCoords(lat, lng) {
+                    if (lng >= 95 && lng < 105) return 'Asia/Jakarta';
+                    if (lng >= 105 && lng < 120) return 'Asia/Jakarta';
+                    if (lng >= 120 && lng < 135) return 'Asia/Makassar';
+                    if (lng >= 135) return 'Asia/Jayapura';
+                    return 'Asia/Jakarta';
+                },
+
+                async fetchPrayerTimes(cityId, tz) {
+                    try {
+                        const response = await fetch(`/api/muslim/prayer?city_id=${cityId}&tz=${tz}`);
                         const data = await response.json();
                         if (data?.jadwal) {
                             this.location = data.kabko || 'Indonesia';
