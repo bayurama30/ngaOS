@@ -1,4 +1,13 @@
 <x-app-layout>
+    <style>
+        .chat-content strong { font-weight: 700; }
+        .chat-content em { font-style: italic; }
+        .chat-content code { font-family: monospace; }
+        .chat-content blockquote { margin: 4px 0; }
+        .chat-content h1, .chat-content h2, .chat-content h3 { line-height: 1.4; }
+        .chat-content br + br { display: block; content: ""; margin-top: 4px; }
+    </style>
+
     <div class="px-4 py-6 flex flex-col h-[calc(100vh-180px)]" x-data="chatbot()" x-init="loadHistory()">
         <div class="flex items-center justify-between mb-4">
             <div>
@@ -28,7 +37,7 @@
                     </div>
                     <div class="flex justify-start">
                         <div class="bg-white rounded-2xl rounded-bl-md px-4 py-2.5 max-w-[80%] shadow-sm border border-gray-100">
-                            <p class="text-sm text-gray-700 whitespace-pre-wrap" x-text="chat.response"></p>
+                            <div class="text-sm text-gray-700 chat-content" x-html="formatMessage(chat.response)"></div>
                         </div>
                     </div>
                 </div>
@@ -145,6 +154,29 @@
                 sendQuick(prompt) {
                     this.message = prompt;
                     this.sendMessage();
+                },
+
+                formatMessage(text) {
+                    if (!text) return '';
+
+                    text = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+                    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+                    text = text.replace(/`(.*?)`/g, '<code class="bg-gray-100 px-1 rounded text-xs">$1</code>');
+
+                    text = text.replace(/^### (.*$)/gm, '<h3 class="font-bold text-base mt-2 mb-1">$1</h3>');
+                    text = text.replace(/^## (.*$)/gm, '<h2 class="font-bold text-lg mt-2 mb-1">$1</h2>');
+                    text = text.replace(/^# (.*$)/gm, '<h1 class="font-bold text-xl mt-2 mb-1">$1</h1>');
+
+                    text = text.replace(/^> (.*$)/gm, '<blockquote class="border-l-2 border-gray-300 pl-2 italic text-gray-600 my-1">$1</blockquote>');
+
+                    text = text.replace(/^\d+\. (.*$)/gm, '<div class="ml-4">$&</div>');
+                    text = text.replace(/^- (.*$)/gm, '<div class="ml-4">• $1</div>');
+
+                    text = text.replace(/\n/g, '<br>');
+
+                    return text;
                 },
 
                 scrollToBottom() {

@@ -28,6 +28,7 @@ Aturan penting:
 4. Jangan bertele-tele, langsung ke intinya
 5. Jika ditanya doa, langsung berikan lafaz doanya
 6. Jika ditanya tata cara, berikan langkah-langkah singkat
+7. Format markdown: gunakan **teks** untuk bold, *teks* untuk italic, > untuk kutipan
 PROMPT,
 
     'quick_prompts' => [
