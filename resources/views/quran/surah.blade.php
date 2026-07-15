@@ -93,14 +93,21 @@
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
                     <button @click="toggleAudio()" class="w-10 h-10 bg-teal-600 rounded-full flex items-center justify-center text-white mr-3">
-                        <svg x-show="!playing" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                        <svg x-show="playing" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                        <template x-if="!playing">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        </template>
+                        <template x-if="playing">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                        </template>
                     </button>
                     <div>
                         <p class="font-medium text-gray-800">Audio Murottal</p>
                         <p class="text-sm text-gray-500">Muhammad Thaha</p>
                     </div>
                 </div>
+                <button @click="stopAudio()" x-show="playing" class="text-red-500 hover:text-red-700 p-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+                </button>
             </div>
         </div>
 
@@ -108,14 +115,23 @@
             <template x-for="(ayah, index) in ayahs" :key="index">
                 <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
                     <div class="flex items-center justify-between mb-3">
-                        <div class="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center">
-                            <span class="text-teal-700 text-xs font-bold" x-text="ayah.ayah_number"></span>
-                        </div>
                         <div class="flex items-center space-x-2">
-                            <button @click="playAyah(index)" class="p-1 text-gray-400 hover:text-teal-600">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            <div class="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center">
+                                <span class="text-teal-700 text-xs font-bold" x-text="ayah.ayah_number"></span>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-1">
+                            <button @click="playAyah(index)" class="w-9 h-9 rounded-full flex items-center justify-center transition" :class="playingAyah === index ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-teal-100 hover:text-teal-600'">
+                                <template x-if="playingAyah !== index">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                </template>
+                                <template x-if="playingAyah === index">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                                </template>
+                            </button>
+                            <button @click="toggleBookmark(index)" class="w-9 h-9 rounded-full flex items-center justify-center transition" :class="bookmarkedAyahs.includes(index) ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-400 hover:bg-amber-50 hover:text-amber-500'">
+                                <svg class="w-4 h-4" :fill="bookmarkedAyahs.includes(index) ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
                                 </svg>
                             </button>
                         </div>
@@ -137,10 +153,10 @@
     <script>
         const ARABIC_LATIN_MAP = {
             '\u0627': 'a', '\u0628': 'b', '\u062A': 't', '\u062B': 'ts',
-            '\u062C': 'j', '\u062D': 'ḥ', '\u062E': 'kh', '\u062F': 'd',
+            '\u062C': 'j', '\u062D': '\u1E25', '\u062E': 'kh', '\u062F': 'd',
             '\u0630': 'dz', '\u0631': 'r', '\u0632': 'z', '\u0633': 's',
-            '\u0634': 'sy', '\u0635': 'ṣ', '\u0636': 'ḍ', '\u0637': 'ṭ',
-            '\u0638': 'ẓ', '\u0639': '\u2018', '\u063A': 'gh', '\u0641': 'f',
+            '\u0634': 'sy', '\u0635': '\u1E63', '\u0636': '\u1E0D', '\u0637': '\u1E6D',
+            '\u0638': '\u1E93', '\u0639': '\u2018', '\u063A': 'gh', '\u0641': 'f',
             '\u0642': 'q', '\u0643': 'k', '\u0644': 'l', '\u0645': 'm',
             '\u0646': 'n', '\u0647': 'h', '\u0648': 'w', '\u064A': 'y',
             '\u0621': "'", '\u0622': '\u0101', '\u0623': 'a', '\u0625': 'i',
@@ -157,30 +173,21 @@
         };
 
         const SPECIAL_COMBOS = {
-            'اللّٰه': 'Allāh',
-            'اللّه': 'Allāh',
-            'بِسْمِ': 'Bismi',
-            'الرَّحْمٰنِ': 'ar-Raḥmān',
-            'الرَّحِيمِ': 'ar-Raḥīm',
-            'مُحَمَّدٌ': 'Muḥammad',
-            'مُحَمَّد': 'Muḥammad',
-            'رَسُولُ': 'Rasūlu',
-            'اللَّهِ': 'Allāh',
-            'رَبِّ': 'Rabbi',
-            'رَبَّ': 'Rabba',
-            'عَلِيٌّ': 'Aliyy',
-            'عَظِيمٌ': 'Aẓīm',
+            '\u0627\u0644\u0644\u0651\u0670\u0647': 'All\u0101h',
+            '\u0627\u0644\u0644\u0651\u0647': 'All\u0101h',
+            '\u0628\u0650\u0633\u0652\u0645\u0650': 'Bismi',
+            '\u0627\u0644\u0631\u0651\u064E\u062D\u0652\u0645\u0670\u0646\u0650': 'ar-Ra\u1E25m\u0101n',
+            '\u0627\u0644\u0631\u0651\u064E\u062D\u0650\u064A\u0652\u0645\u0650': 'ar-Ra\u1E25\u012Bm',
+            '\u0645\u064F\u062D\u064E\u0645\u0651\u064E\u062F\u064C': 'Mu\u1E25ammad',
+            '\u0645\u064F\u062D\u064E\u0645\u0651\u064E\u062F': 'Mu\u1E25ammad',
         };
 
         function transliterateArabic(text) {
             if (!text) return '';
-
             let result = text;
-
             for (const [arabic, latin] of Object.entries(SPECIAL_COMBOS)) {
                 result = result.split(arabic).join(latin);
             }
-
             let latin = '';
             for (let i = 0; i < result.length; i++) {
                 const char = result[i];
@@ -192,10 +199,7 @@
                     latin += char;
                 }
             }
-
-            latin = latin.replace(/\s+/g, ' ').trim();
-
-            return latin;
+            return latin.replace(/\s+/g, ' ').trim();
         }
 
         function surahReader(surahNumber) {
@@ -204,6 +208,7 @@
                 ayahs: [],
                 loading: true,
                 playing: false,
+                playingAyah: -1,
                 currentAudio: null,
                 showSettings: false,
                 arabicFont: "'LPMQ IsepMisbah', serif",
@@ -211,8 +216,12 @@
                 showLatin: false,
                 showTranslation: true,
                 showTafsir: false,
+                bookmarkedAyahs: [],
 
-                init() { this.loadSettings(); },
+                init() {
+                    this.loadSettings();
+                    this.loadBookmarks();
+                },
 
                 loadSettings() {
                     const saved = localStorage.getItem('quran_settings');
@@ -236,6 +245,27 @@
                     }));
                 },
 
+                loadBookmarks() {
+                    const saved = localStorage.getItem(`quran_bookmarks_${surahNumber}`);
+                    if (saved) {
+                        this.bookmarkedAyahs = JSON.parse(saved);
+                    }
+                },
+
+                saveBookmarks() {
+                    localStorage.setItem(`quran_bookmarks_${surahNumber}`, JSON.stringify(this.bookmarkedAyahs));
+                },
+
+                toggleBookmark(index) {
+                    const idx = this.bookmarkedAyahs.indexOf(index);
+                    if (idx > -1) {
+                        this.bookmarkedAyahs.splice(idx, 1);
+                    } else {
+                        this.bookmarkedAyahs.push(index);
+                    }
+                    this.saveBookmarks();
+                },
+
                 transliterate(text) {
                     return transliterateArabic(text);
                 },
@@ -256,9 +286,9 @@
 
                 toggleAudio() {
                     if (this.playing) {
-                        this.currentAudio?.pause();
-                        this.playing = false;
+                        this.stopAudio();
                     } else {
+                        this.playingAyah = -1;
                         this.currentAudio = new Audio(`https://cdn.myquran.com/audio/surah/${surahNumber}.mp3`);
                         this.currentAudio.play();
                         this.playing = true;
@@ -266,14 +296,28 @@
                     }
                 },
 
-                playAyah(index) {
+                stopAudio() {
                     this.currentAudio?.pause();
+                    this.currentAudio = null;
+                    this.playing = false;
+                    this.playingAyah = -1;
+                },
+
+                playAyah(index) {
+                    if (this.playingAyah === index) {
+                        this.stopAudio();
+                        return;
+                    }
+
+                    this.currentAudio?.pause();
+                    this.playing = false;
+
                     const ayah = this.ayahs[index];
                     if (ayah?.audio_url) {
                         this.currentAudio = new Audio(ayah.audio_url);
                         this.currentAudio.play();
-                        this.playing = true;
-                        this.currentAudio.onended = () => this.playing = false;
+                        this.playingAyah = index;
+                        this.currentAudio.onended = () => this.playingAyah = -1;
                     }
                 }
             };
