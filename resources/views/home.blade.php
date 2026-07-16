@@ -117,7 +117,14 @@
 
         {{-- Daily Verse --}}
         <div class="bg-white rounded-xl p-5 mb-6 shadow-sm border border-gray-100" x-data="dailyVerse()" x-init="loadVerse()">
-            <h3 class="text-lg font-bold text-gray-800 mb-3">Ayat Hari Ini</h3>
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-bold text-gray-800">Ayat Hari Ini</h3>
+                <button @click="loadVerse()" class="text-teal-600 hover:text-teal-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                </button>
+            </div>
             <div x-show="loading" class="text-center py-4">
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto"></div>
             </div>
@@ -348,8 +355,9 @@
                 verse: null,
                 loading: true,
                 async loadVerse() {
+                    this.loading = true;
                     try {
-                        const response = await fetch('/api/muslim/quran/random');
+                        const response = await fetch(`/api/muslim/quran/random?t=${Date.now()}`);
                         const data = await response.json();
                         if (data) {
                             this.verse = {
