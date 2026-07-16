@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="px-4 py-6" x-data="surahReader({{ $surahNumber }})" x-init="loadSurah()">
+    <div class="px-4 py-6" x-data="surahReader({{ $surahNumber }})" x-init="init()">
         <div class="mb-4">
             <a href="{{ route('quran.index') }}" class="inline-flex items-center text-teal-600 hover:text-teal-700">
                 <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -14,6 +14,7 @@
             <p class="text-gray-500 mt-3">Memuat surat...</p>
         </div>
 
+        {{-- Surah Header --}}
         <div x-show="!loading && surah" class="bg-gradient-to-br from-teal-600 to-teal-700 rounded-2xl p-5 mb-4 text-white text-center">
             <p class="text-teal-100 text-sm" x-text="surah?.revelation"></p>
             <h2 class="text-2xl font-bold mt-1" x-text="surah?.name_latin"></h2>
@@ -157,7 +158,7 @@
 
         {{-- Ayat --}}
         <div x-show="!loading && surah" class="space-y-4">
-            <template x-for="(ayah, index) in ayahs" :key="index">
+            <template x-for="(ayah, index) in ayahs" :key="`${currentSurahNumber}-${index}`">
                 <div :id="`ayah-${ayah.ayah_number}`" 
                      :class="[
                          'rounded-xl p-5 shadow-sm border transition-all duration-500 scroll-mt-24',
@@ -214,6 +215,36 @@
                     </div>
                 </div>
             </template>
+
+            {{-- Next Surah Indicator --}}
+            <div x-show="hasNextSurah && !loadingNext" class="bg-gradient-to-b from-gray-50 to-teal-50 rounded-2xl p-6 text-center border border-teal-100">
+                <svg class="w-10 h-10 text-teal-400 mx-auto mb-3 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                </svg>
+                <p class="text-teal-700 font-semibold mb-1">Geser ke bawah untuk Surat Berikutnya</p>
+                <p class="text-sm text-gray-500" x-text="nextSurahName"></p>
+                <button @click="goToNextSurah()" class="mt-3 bg-teal-600 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-teal-700 transition">
+                    Lanjut ke Surat Berikutnya
+                </button>
+            </div>
+
+            {{-- Loading Next Surah --}}
+            <div x-show="loadingNext" class="text-center py-8">
+                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-teal-600 mx-auto"></div>
+                <p class="text-gray-500 mt-3">Memuat surat berikutnya...</p>
+            </div>
+
+            {{-- End of Quran --}}
+            <div x-show="!hasNextSurah" class="bg-gradient-to-b from-teal-50 to-teal-100 rounded-2xl p-6 text-center border border-teal-200">
+                <svg class="w-12 h-12 text-teal-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <p class="text-teal-800 font-bold text-lg">Alhamdulillah</p>
+                <p class="text-teal-600 mt-1">Anda telah menyelesaikan Al-Quran</p>
+                <a href="{{ route('quran.index') }}" class="inline-block mt-4 bg-teal-600 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-teal-700 transition">
+                    Kembali ke Daftar Surat
+                </a>
+            </div>
         </div>
     </div>
 
@@ -263,7 +294,7 @@
             return latin.replace(/\s+/g, ' ').trim();
         }
 
-        function surahReader(surahNumber) {
+        function surahReader(initialSurahNumber) {
             return {
                 surah: null,
                 ayahs: [],
@@ -284,10 +315,29 @@
                 currentAudio: null,
                 stopRequested: false,
                 wordDataCache: {},
+                currentSurahNumber: initialSurahNumber,
+                hasNextSurah: true,
+                loadingNext: false,
+                nextSurahName: '',
+                scrollHandler: null,
 
                 init() {
                     this.loadSettings();
                     this.loadBookmarks();
+                    this.loadSurah();
+                    this.setupScrollListener();
+                },
+
+                setupScrollListener() {
+                    this.scrollHandler = () => {
+                        const scrollPosition = window.innerHeight + window.scrollY;
+                        const documentHeight = document.documentElement.scrollHeight;
+                        
+                        if (scrollPosition >= documentHeight - 200 && this.hasNextSurah && !this.loadingNext && !this.loading) {
+                            this.loadNextSurah();
+                        }
+                    };
+                    window.addEventListener('scroll', this.scrollHandler);
                 },
 
                 loadSettings() {
@@ -317,15 +367,15 @@
                 },
 
                 loadBookmarks() {
-                    const saved = localStorage.getItem(`quran_bookmarks_${surahNumber}`);
+                    const saved = localStorage.getItem(`quran_bookmarks_${this.currentSurahNumber}`);
                     if (saved) {
                         this.bookmarkedAyahs = JSON.parse(saved);
                     }
                 },
 
                 saveBookmarks() {
-                    localStorage.setItem(`quran_bookmarks_${surahNumber}`, JSON.stringify(this.bookmarkedAyahs));
-                    let timestamps = JSON.parse(localStorage.getItem(`quran_bookmarks_ts_${surahNumber}`) || '{}');
+                    localStorage.setItem(`quran_bookmarks_${this.currentSurahNumber}`, JSON.stringify(this.bookmarkedAyahs));
+                    let timestamps = JSON.parse(localStorage.getItem(`quran_bookmarks_ts_${this.currentSurahNumber}`) || '{}');
                     this.bookmarkedAyahs.forEach(idx => {
                         if (!timestamps[idx]) {
                             timestamps[idx] = new Date().toISOString();
@@ -336,7 +386,7 @@
                             delete timestamps[key];
                         }
                     });
-                    localStorage.setItem(`quran_bookmarks_ts_${surahNumber}`, JSON.stringify(timestamps));
+                    localStorage.setItem(`quran_bookmarks_ts_${this.currentSurahNumber}`, JSON.stringify(timestamps));
                 },
 
                 toggleBookmark(index) {
@@ -355,12 +405,18 @@
 
                 async loadSurah() {
                     try {
-                        const response = await fetch(`/api/muslim/quran/surah/${surahNumber}`);
+                        const response = await fetch(`/api/muslim/quran/surah/${this.currentSurahNumber}`);
                         const data = await response.json();
                         if (data) {
                             this.surah = data;
                             this.ayahs = data.ayahs || [];
-                            localStorage.setItem(`quran_surah_${surahNumber}`, JSON.stringify({
+                            this.hasNextSurah = this.currentSurahNumber < 114;
+                            
+                            if (this.hasNextSurah) {
+                                this.loadNextSurahName();
+                            }
+
+                            localStorage.setItem(`quran_surah_${this.currentSurahNumber}`, JSON.stringify({
                                 name_latin: data.name_latin,
                                 name: data.name,
                                 translation: data.translation,
@@ -385,6 +441,59 @@
                         console.error('Error loading surah:', error);
                     }
                     this.loading = false;
+                },
+
+                async loadNextSurahName() {
+                    try {
+                        const response = await fetch(`/api/muslim/quran/surah/${this.currentSurahNumber + 1}`);
+                        const data = await response.json();
+                        if (data) {
+                            this.nextSurahName = `${data.name_latin} - ${data.translation}`;
+                        }
+                    } catch (error) {
+                        console.error('Error loading next surah name:', error);
+                    }
+                },
+
+                async loadNextSurah() {
+                    if (this.loadingNext || !this.hasNextSurah) return;
+                    
+                    this.loadingNext = true;
+                    const nextNumber = this.currentSurahNumber + 1;
+                    
+                    if (nextNumber > 114) {
+                        this.hasNextSurah = false;
+                        this.loadingNext = false;
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`/api/muslim/quran/surah/${nextNumber}`);
+                        const data = await response.json();
+                        
+                        if (data && data.ayahs) {
+                            this.ayahs = [...this.ayahs, ...data.ayahs];
+                            this.currentSurahNumber = nextNumber;
+                            this.surah = data;
+                            this.hasNextSurah = nextNumber < 114;
+                            
+                            if (this.hasNextSurah) {
+                                this.loadNextSurahName();
+                            }
+
+                            history.replaceState(null, '', `/quran/${nextNumber}`);
+                        }
+                    } catch (error) {
+                        console.error('Error loading next surah:', error);
+                    }
+                    
+                    this.loadingNext = false;
+                },
+
+                goToNextSurah() {
+                    if (this.hasNextSurah) {
+                        window.location.href = `/quran/${this.currentSurahNumber + 1}`;
+                    }
                 },
 
                 scrollToAyah(ayahNumber) {
@@ -503,7 +612,7 @@
                     const ayah = this.ayahs[index];
                     if (!ayah) return;
 
-                    const wordData = await this.fetchWordData(surahNumber, ayah.ayah_number);
+                    const wordData = await this.fetchWordData(this.currentSurahNumber, ayah.ayah_number);
                     
                     if (wordData && wordData.length > 0) {
                         await this.playWithWordAudio(index, wordData);
