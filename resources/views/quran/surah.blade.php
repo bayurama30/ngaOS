@@ -216,39 +216,19 @@
                 </div>
             </template>
 
-            {{-- Next Surah Indicator (Pull-to-Refresh Style) --}}
-            <div x-show="hasNextSurah && !loadingNext" 
-                 class="text-center py-6 transition-all duration-200"
-                 :style="`transform: translateY(${Math.min(overscrollDistance * 0.2, 40)}px); opacity: ${Math.min(overscrollDistance / 100, 1)}`">
-                
-                <!-- Ikon panah dengan rotasi -->
-                <div class="relative w-16 h-16 mx-auto mb-3">
-                    <svg class="w-16 h-16 transition-all duration-300" 
-                         :class="overscrollDistance >= 150 ? 'text-teal-500' : 'text-gray-300'"
-                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="10" stroke-width="1.5" opacity="0.3"/>
-                        <path class="transition-transform duration-300 origin-center"
-                              :style="`transform: rotate(${Math.min(overscrollDistance * 1.2, 180)}deg)`"
-                              stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                              d="M12 5v14m0 0l-4-4m4 4l4-4"/>
+            {{-- Next Surah Button --}}
+            <div x-show="hasNextSurah && !loadingNext" class="py-6 text-center">
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <svg class="w-12 h-12 text-teal-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 5v14m0 0l-6-6m6 6l6-6"/>
                     </svg>
+                    <p class="text-gray-600 mb-1">Selesai membaca surat ini?</p>
+                    <p class="text-lg font-bold text-gray-800 mb-1" x-text="nextSurahName"></p>
+                    <p class="text-sm text-gray-500 mb-4">Lanjut ke surat berikutnya</p>
+                    <button @click="goToNextSurah()" class="bg-teal-600 text-white px-8 py-3 rounded-xl font-medium hover:bg-teal-700 transition shadow-sm">
+                        Lanjut ke Surat Berikutnya
+                    </button>
                 </div>
-                
-                <!-- Teks dinamis -->
-                <p class="text-sm font-medium transition-colors duration-200"
-                   :class="overscrollDistance >= 150 ? 'text-teal-600' : 'text-gray-500'"
-                   x-text="overscrollDistance >= 150 ? 'Lepas untuk memuat!' : 'Tarik ke bawah untuk memuat surat berikutnya'">
-                </p>
-                
-                <!-- Progress bar -->
-                <div class="w-40 h-1.5 bg-gray-200 rounded-full mx-auto mt-3 overflow-hidden">
-                    <div class="h-full rounded-full transition-all duration-100"
-                         :class="overscrollDistance >= 150 ? 'bg-teal-500' : 'bg-gray-400'"
-                         :style="`width: ${Math.min((overscrollDistance / 150) * 100, 100)}%`"></div>
-                </div>
-                
-                <!-- Nama surat berikutnya -->
-                <p class="text-xs text-gray-400 mt-3" x-text="nextSurahName"></p>
             </div>
 
             {{-- Loading Next Surah --}}
@@ -342,79 +322,11 @@
                 hasNextSurah: true,
                 loadingNext: false,
                 nextSurahName: '',
-                scrollHandler: null,
-                touchStartY: 0,
-                overscrollDistance: 0,
-                isOverscrolling: false,
-                triggered: false,
 
                 init() {
                     this.loadSettings();
                     this.loadBookmarks();
                     this.loadSurah();
-                    this.setupScrollListener();
-                    this.setupTouchListeners();
-                },
-
-                setupScrollListener() {
-                    this.scrollHandler = () => {
-                        if (this.loadingNext || !this.hasNextSurah || this.loading) return;
-
-                        const scrollPosition = window.innerHeight + window.scrollY;
-                        const documentHeight = document.documentElement.scrollHeight;
-                        const overscroll = scrollPosition - documentHeight;
-
-                        if (overscroll > 0) {
-                            this.overscrollDistance = overscroll;
-                            this.isOverscrolling = true;
-
-                            if (overscroll >= 150 && !this.triggered) {
-                                this.triggered = true;
-                                this.loadNextSurah();
-                            }
-                        } else {
-                            this.overscrollDistance = 0;
-                            this.isOverscrolling = false;
-                        }
-                    };
-                    window.addEventListener('scroll', this.scrollHandler, { passive: true });
-                },
-
-                setupTouchListeners() {
-                    const container = document.querySelector('.space-y-4');
-                    if (!container) return;
-
-                    container.addEventListener('touchstart', (e) => {
-                        this.touchStartY = e.touches[0].clientY;
-                    }, { passive: true });
-
-                    container.addEventListener('touchmove', (e) => {
-                        if (this.loadingNext || !this.hasNextSurah) return;
-
-                        const touchY = e.touches[0].clientY;
-                        const deltaY = this.touchStartY - touchY;
-                        const scrollPosition = window.innerHeight + window.scrollY;
-                        const documentHeight = document.documentElement.scrollHeight;
-
-                        if (scrollPosition >= documentHeight - 50 && deltaY > 0) {
-                            this.overscrollDistance = deltaY;
-                            this.isOverscrolling = true;
-
-                            if (deltaY >= 150 && !this.triggered) {
-                                this.triggered = true;
-                                this.loadNextSurah();
-                            }
-                        }
-                    }, { passive: true });
-
-                    container.addEventListener('touchend', () => {
-                        if (this.overscrollDistance >= 150 && !this.triggered) {
-                            this.triggered = true;
-                            this.loadNextSurah();
-                        }
-                        this.overscrollDistance = 0;
-                        this.isOverscrolling = false;
-                    }, { passive: true });
                 },
 
                 loadSettings() {
@@ -525,7 +437,7 @@
                         const response = await fetch(`/api/muslim/quran/surah/${this.currentSurahNumber + 1}`);
                         const data = await response.json();
                         if (data) {
-                            this.nextSurahName = `${data.name_latin} - ${data.translation}`;
+                            this.nextSurahName = `${data.name_latin} (${data.name})`;
                         }
                     } catch (error) {
                         console.error('Error loading next surah name:', error);
@@ -536,9 +448,6 @@
                     if (this.loadingNext || !this.hasNextSurah) return;
                     
                     this.loadingNext = true;
-                    this.triggered = false;
-                    this.overscrollDistance = 0;
-                    this.isOverscrolling = false;
                     
                     const nextNumber = this.currentSurahNumber + 1;
                     
