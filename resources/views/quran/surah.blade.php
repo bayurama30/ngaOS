@@ -349,9 +349,8 @@
                 prevSurahName: '',
                 touchStartX: 0,
                 touchStartY: 0,
-                touchEndX: 0,
-                touchEndY: 0,
-                swipeThreshold: 100,
+                swipeThreshold: 50,
+                isSwiping: false,
 
                 init() {
                     this.loadSettings();
@@ -361,30 +360,44 @@
                 },
 
                 setupSwipeGesture() {
-                    document.addEventListener('touchstart', (e) => {
-                        this.touchStartX = e.changedTouches[0].screenX;
-                        this.touchStartY = e.changedTouches[0].screenY;
+                    const mainContent = document.querySelector('main');
+                    if (!mainContent) return;
+
+                    mainContent.addEventListener('touchstart', (e) => {
+                        this.touchStartX = e.touches[0].clientX;
+                        this.touchStartY = e.touches[0].clientY;
+                        this.isSwiping = false;
                     }, { passive: true });
 
-                    document.addEventListener('touchend', (e) => {
-                        this.touchEndX = e.changedTouches[0].screenX;
-                        this.touchEndY = e.changedTouches[0].screenY;
-                        this.handleSwipe();
+                    mainContent.addEventListener('touchmove', (e) => {
+                        if (!this.touchStartX) return;
+                        
+                        const deltaX = e.touches[0].clientX - this.touchStartX;
+                        const deltaY = Math.abs(e.touches[0].clientY - this.touchStartY);
+                        
+                        if (Math.abs(deltaX) > 15 && deltaY < Math.abs(deltaX)) {
+                            this.isSwiping = true;
+                        }
                     }, { passive: true });
-                },
 
-                handleSwipe() {
-                    const deltaX = this.touchEndX - this.touchStartX;
-                    const deltaY = Math.abs(this.touchEndY - this.touchStartY);
-
-                    if (Math.abs(deltaX) < this.swipeThreshold) return;
-                    if (deltaY > Math.abs(deltaX)) return;
-
-                    if (deltaX > 0 && this.currentSurahNumber > 1) {
-                        window.location.href = `/quran/${this.currentSurahNumber - 1}`;
-                    } else if (deltaX < 0 && this.hasNextSurah) {
-                        window.location.href = `/quran/${this.currentSurahNumber + 1}`;
-                    }
+                    mainContent.addEventListener('touchend', (e) => {
+                        if (!this.touchStartX) return;
+                        
+                        const touchEndX = e.changedTouches[0].clientX;
+                        const deltaX = touchEndX - this.touchStartX;
+                        
+                        if (this.isSwiping && Math.abs(deltaX) >= this.swipeThreshold) {
+                            if (deltaX > 0 && this.currentSurahNumber > 1) {
+                                window.location.href = `/quran/${this.currentSurahNumber - 1}`;
+                            } else if (deltaX < 0 && this.hasNextSurah) {
+                                window.location.href = `/quran/${this.currentSurahNumber + 1}`;
+                            }
+                        }
+                        
+                        this.touchStartX = 0;
+                        this.touchStartY = 0;
+                        this.isSwiping = false;
+                    }, { passive: true });
                 },
 
                 loadSettings() {
