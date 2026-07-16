@@ -244,63 +244,63 @@
                     </div>
                 </div>
             </template>
+        </div>
 
-            {{-- Surah Navigation --}}
-            <div x-show="!loadingNext" class="py-4">
-                <div class="flex items-center justify-between bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    {{-- Previous Surah --}}
-                    <a x-show="currentSurahNumber > 1" 
-                       :href="`/quran/${currentSurahNumber - 1}`"
-                       class="flex items-center px-4 py-3 hover:bg-gray-50 transition flex-1">
-                        <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                        </svg>
-                        <div class="text-left">
-                            <p class="text-xs text-gray-400">Sebelumnya</p>
-                            <p class="text-sm font-medium text-gray-700 truncate" x-text="prevSurahName"></p>
-                        </div>
-                    </a>
-                    <div x-show="currentSurahNumber <= 1" class="flex-1"></div>
-
-                    {{-- Center Info --}}
-                    <div class="px-3 py-3 text-center border-x border-gray-100">
-                        <p class="text-xs text-gray-400">Surat</p>
-                        <p class="text-sm font-bold text-teal-600" x-text="currentSurahNumber"></p>
+        {{-- Surah Navigation (Outside swipeable area) --}}
+        <div x-show="!loading && surah && !loadingNext" class="py-4">
+            <div class="flex items-center justify-between bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                {{-- Previous Surah --}}
+                <a x-show="currentSurahNumber > 1" 
+                   :href="`/quran/${currentSurahNumber - 1}`"
+                   class="flex items-center px-4 py-3 hover:bg-gray-50 transition flex-1">
+                    <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                    <div class="text-left">
+                        <p class="text-xs text-gray-400">Sebelumnya</p>
+                        <p class="text-sm font-medium text-gray-700 truncate" x-text="prevSurahName"></p>
                     </div>
-
-                    {{-- Next Surah --}}
-                    <a x-show="hasNextSurah" 
-                       :href="`/quran/${currentSurahNumber + 1}`"
-                       class="flex items-center px-4 py-3 hover:bg-gray-50 transition flex-1 justify-end">
-                        <div class="text-right">
-                            <p class="text-xs text-gray-400">Selanjutnya</p>
-                            <p class="text-sm font-medium text-gray-700 truncate" x-text="nextSurahName"></p>
-                        </div>
-                        <svg class="w-5 h-5 text-gray-400 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                        </svg>
-                    </a>
-                    <div x-show="!hasNextSurah" class="flex-1"></div>
-                </div>
-            </div>
-
-            {{-- Loading Next Surah --}}
-            <div x-show="loadingNext" class="text-center py-8">
-                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-teal-600 mx-auto"></div>
-                <p class="text-gray-500 mt-3">Memuat surat berikutnya...</p>
-            </div>
-
-            {{-- End of Quran --}}
-            <div x-show="!hasNextSurah" class="bg-gradient-to-b from-teal-50 to-teal-100 rounded-2xl p-6 text-center border border-teal-200">
-                <svg class="w-12 h-12 text-teal-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <p class="text-teal-800 font-bold text-lg">Alhamdulillah</p>
-                <p class="text-teal-600 mt-1">Anda telah menyelesaikan Al-Quran</p>
-                <a href="{{ route('quran.index') }}" class="inline-block mt-4 bg-teal-600 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-teal-700 transition">
-                    Kembali ke Daftar Surat
                 </a>
+                <div x-show="currentSurahNumber <= 1" class="flex-1"></div>
+
+                {{-- Center Info --}}
+                <div class="px-3 py-3 text-center border-x border-gray-100">
+                    <p class="text-xs text-gray-400">Surat</p>
+                    <p class="text-sm font-bold text-teal-600" x-text="currentSurahNumber"></p>
+                </div>
+
+                {{-- Next Surah --}}
+                <a x-show="hasNextSurah" 
+                   :href="`/quran/${currentSurahNumber + 1}`"
+                   class="flex items-center px-4 py-3 hover:bg-gray-50 transition flex-1 justify-end">
+                    <div class="text-right">
+                        <p class="text-xs text-gray-400">Selanjutnya</p>
+                        <p class="text-sm font-medium text-gray-700 truncate" x-text="nextSurahName"></p>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </a>
+                <div x-show="!hasNextSurah" class="flex-1"></div>
             </div>
+        </div>
+
+        {{-- Loading Next Surah --}}
+        <div x-show="loadingNext" class="text-center py-8">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-teal-600 mx-auto"></div>
+            <p class="text-gray-500 mt-3">Memuat surat berikutnya...</p>
+        </div>
+
+        {{-- End of Quran --}}
+        <div x-show="!hasNextSurah && !loading" class="bg-gradient-to-b from-teal-50 to-teal-100 rounded-2xl p-6 text-center border border-teal-200">
+            <svg class="w-12 h-12 text-teal-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-teal-800 font-bold text-lg">Alhamdulillah</p>
+            <p class="text-teal-600 mt-1">Anda telah menyelesaikan Al-Quran</p>
+            <a href="{{ route('quran.index') }}" class="inline-block mt-4 bg-teal-600 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-teal-700 transition">
+                Kembali ke Daftar Surat
+            </a>
         </div>
     </div>
 
