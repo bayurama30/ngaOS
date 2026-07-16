@@ -1,5 +1,34 @@
 <x-app-layout>
     <div class="px-4 py-6" x-data="surahReader({{ $surahNumber }})" x-init="init()">
+        {{-- Swipe Indicators --}}
+        <div x-show="swipeDirection === 'right' && currentSurahNumber > 1" 
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 -translate-x-4"
+             x-transition:enter-end="opacity-100 translate-x-0"
+             class="fixed left-2 top-1/2 -translate-y-1/2 z-50 bg-white/90 backdrop-blur-sm rounded-xl px-3 py-2 shadow-lg border border-gray-200 flex items-center space-x-2">
+            <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            <span class="text-sm font-medium text-gray-700" x-text="prevSurahName"></span>
+        </div>
+
+        <div x-show="swipeDirection === 'left' && hasNextSurah" 
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 translate-x-4"
+             x-transition:enter-end="opacity-100 translate-x-0"
+             class="fixed right-2 top-1/2 -translate-y-1/2 z-50 bg-white/90 backdrop-blur-sm rounded-xl px-3 py-2 shadow-lg border border-gray-200 flex items-center space-x-2">
+            <span class="text-sm font-medium text-gray-700" x-text="nextSurahName"></span>
+            <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+        </div>
+
+        {{-- Progress Bar --}}
+        <div x-show="swipeProgress > 0" class="fixed top-0 left-0 right-0 z-50 h-1 bg-gray-200">
+            <div class="h-full bg-teal-500 transition-all duration-100"
+                 :style="`width: ${swipeProgress * 100}%`"></div>
+        </div>
+
         <div class="mb-4">
             <a href="{{ route('quran.index') }}" class="inline-flex items-center text-teal-600 hover:text-teal-700">
                 <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -349,8 +378,10 @@
                 prevSurahName: '',
                 touchStartX: 0,
                 touchStartY: 0,
-                swipeThreshold: 50,
+                swipeThreshold: 120,
                 isSwiping: false,
+                swipeDirection: '',
+                swipeProgress: 0,
 
                 init() {
                     this.loadSettings();
@@ -368,6 +399,8 @@
                         this.touchStartX = e.touches[0].clientX;
                         this.touchStartY = e.touches[0].clientY;
                         this.isSwiping = false;
+                        this.swipeDirection = '';
+                        this.swipeProgress = 0;
                     }, { passive: true });
 
                     mainContent.addEventListener('touchmove', (e) => {
@@ -376,8 +409,10 @@
                         const deltaX = e.touches[0].clientX - this.touchStartX;
                         const deltaY = Math.abs(e.touches[0].clientY - this.touchStartY);
                         
-                        if (Math.abs(deltaX) > 15 && deltaY < Math.abs(deltaX)) {
+                        if (Math.abs(deltaX) > 30 && deltaY < Math.abs(deltaX)) {
                             this.isSwiping = true;
+                            this.swipeDirection = deltaX > 0 ? 'right' : 'left';
+                            this.swipeProgress = Math.min(Math.abs(deltaX) / this.swipeThreshold, 1);
                         }
                     }, { passive: true });
 
@@ -389,15 +424,17 @@
                         
                         if (this.isSwiping && Math.abs(deltaX) >= this.swipeThreshold) {
                             if (deltaX > 0 && this.currentSurahNumber > 1) {
-                                window.location.href = `/quran/${this.currentSurahNumber - 1}`;
+                                this.navigateWithAnimation('prev');
                             } else if (deltaX < 0 && this.hasNextSurah) {
-                                window.location.href = `/quran/${this.currentSurahNumber + 1}`;
+                                this.navigateWithAnimation('next');
                             }
                         }
                         
                         this.touchStartX = 0;
                         this.touchStartY = 0;
                         this.isSwiping = false;
+                        this.swipeDirection = '';
+                        this.swipeProgress = 0;
                     }, { passive: true });
                 },
 
@@ -414,11 +451,21 @@
                         startX = e.clientX;
                         startY = e.clientY;
                         mainContent.style.cursor = 'grabbing';
+                        this.swipeDirection = '';
+                        this.swipeProgress = 0;
                     });
 
                     mainContent.addEventListener('mousemove', (e) => {
                         if (!mouseDown) return;
                         e.preventDefault();
+                        
+                        const deltaX = e.clientX - startX;
+                        const deltaY = Math.abs(e.clientY - startY);
+                        
+                        if (Math.abs(deltaX) > 30 && deltaY < Math.abs(deltaX)) {
+                            this.swipeDirection = deltaX > 0 ? 'right' : 'left';
+                            this.swipeProgress = Math.min(Math.abs(deltaX) / this.swipeThreshold, 1);
+                        }
                     });
 
                     mainContent.addEventListener('mouseup', (e) => {
@@ -429,19 +476,41 @@
                         const deltaX = e.clientX - startX;
                         const deltaY = Math.abs(e.clientY - startY);
 
-                        if (Math.abs(deltaX) >= 50 && deltaY < Math.abs(deltaX)) {
+                        if (Math.abs(deltaX) >= this.swipeThreshold && deltaY < Math.abs(deltaX)) {
                             if (deltaX > 0 && this.currentSurahNumber > 1) {
-                                window.location.href = `/quran/${this.currentSurahNumber - 1}`;
+                                this.navigateWithAnimation('prev');
                             } else if (deltaX < 0 && this.hasNextSurah) {
-                                window.location.href = `/quran/${this.currentSurahNumber + 1}`;
+                                this.navigateWithAnimation('next');
                             }
                         }
+                        
+                        this.swipeDirection = '';
+                        this.swipeProgress = 0;
                     });
 
                     mainContent.addEventListener('mouseleave', () => {
                         mouseDown = false;
                         mainContent.style.cursor = '';
+                        this.swipeDirection = '';
+                        this.swipeProgress = 0;
                     });
+                },
+
+                navigateWithAnimation(direction) {
+                    const mainContent = document.querySelector('main');
+                    if (!mainContent) return;
+
+                    mainContent.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+                    mainContent.style.transform = direction === 'next' ? 'translateX(-100px)' : 'translateX(100px)';
+                    mainContent.style.opacity = '0';
+
+                    setTimeout(() => {
+                        if (direction === 'next' && this.hasNextSurah) {
+                            window.location.href = `/quran/${this.currentSurahNumber + 1}`;
+                        } else if (direction === 'prev' && this.currentSurahNumber > 1) {
+                            window.location.href = `/quran/${this.currentSurahNumber - 1}`;
+                        }
+                    }, 250);
                 },
 
                 loadSettings() {
