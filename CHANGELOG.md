@@ -2,6 +2,46 @@
 
 All notable changes to NgaOS - Islamic Web App will be documented in this file.
 
+## [1.0.2] - 2026-07-16
+
+### ✨ New Features
+
+#### Al-Quran
+- **Pengaturan Audio** - Pilihan mode Normal atau Word-by-Word
+- **Font Settings** - Pilihan font Arab (LPMQ IsepMisbah, Amiri Quran, dll)
+- **Ukuran Font** - Slider 80% - 250% dengan preview dinamis
+- **Huruf Latin** - Toggle transliterasi Arab ke Latin
+- **Tandai Ayat** - Bookmark ayat dengan timestamp
+- **Halaman Ayat Ditandai** - Navigasi langsung ke ayat
+- **Navigasi Surah** - Tombol prev/next + swipe/drag gesture
+- **Pull-to-Refresh** - Scroll paksa untuk pindah surah
+- **Audio Seamless** - Lookahead buffering tanpa jeda antar ayat
+
+#### Home Page
+- **Ayat Hari Ini** - Tombol refresh manual
+- **Hadis Hari Ini** - Tombol refresh manual
+- **Kalender Hijriah** - Tanggal Hijriah otomatis
+
+### 🐛 Bug Fixes
+
+#### Al-Quran
+- Fix surah pagination - fetch semua ayat (tidak hanya 10)
+- Fix audio playback - perbaikan loading dan error handling
+- Fix daily verse refresh - bypass cache untuk random ayah
+- Fix route order - search routes sebelum parameterized routes
+
+#### Hadis
+- Fix hadith search - fetch detail lengkap (grade, takhrij)
+- Fix random hadis refresh - cache buster untuk hasil baru
+- Fix missing Http import in HadithService
+
+#### UI/UX
+- Fix hadith search results showing "Sumber tidak diketahui"
+- Fix navigation buttons tidak bisa di-swipe
+- Fix color visibility pada halaman koleksi hadis
+
+---
+
 ## [1.0.1] - 2026-07-16
 
 ### 🐛 Bug Fixes
