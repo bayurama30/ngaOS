@@ -731,6 +731,9 @@
                     this.isPlayingFull = true;
                     this.stopRequested = false;
 
+                    // Preload first ayah
+                    let nextAudioPromise = this.preloadAudio(this.ayahs[0]?.audio_url);
+
                     for (let i = 0; i < this.ayahs.length; i++) {
                         if (this.stopRequested) break;
 
@@ -741,19 +744,69 @@
                             this.scrollToAyah(this.ayahs[i].ayah_number);
                         }
 
-                        await this.playAyahAudio(i);
+                        // Wait for current audio to be ready
+                        const currentAudio = await nextAudioPromise;
+
+                        // Preload next ayah while current is playing
+                        if (i < this.ayahs.length - 1) {
+                            nextAudioPromise = this.preloadAudio(this.ayahs[i + 1]?.audio_url);
+                        }
+
+                        // Play current ayah
+                        if (currentAudio) {
+                            this.currentAudio = currentAudio;
+                            await this.playPreloadedAudio(currentAudio);
+                        }
 
                         if (this.stopRequested) break;
-
-                        if (i < this.ayahs.length - 1) {
-                            await this.sleep(500);
-                        }
                     }
 
                     this.currentPlayingAyah = -1;
                     this.highlightedWordIndex = -1;
                     this.isPlayingFull = false;
                     this.stopRequested = false;
+                },
+
+                preloadAudio(url) {
+                    return new Promise((resolve) => {
+                        if (!url) {
+                            resolve(null);
+                            return;
+                        }
+
+                        const audio = new Audio();
+                        audio.preload = 'auto';
+
+                        audio.addEventListener('canplaythrough', () => {
+                            resolve(audio);
+                        }, { once: true });
+
+                        audio.addEventListener('error', () => {
+                            resolve(null);
+                        }, { once: true });
+
+                        audio.src = url;
+                        audio.load();
+                    });
+                },
+
+                playPreloadedAudio(audio) {
+                    return new Promise((resolve) => {
+                        if (!audio) {
+                            resolve();
+                            return;
+                        }
+
+                        audio.addEventListener('ended', () => {
+                            resolve();
+                        }, { once: true });
+
+                        audio.addEventListener('error', () => {
+                            resolve();
+                        }, { once: true });
+
+                        audio.play().catch(() => resolve());
+                    });
                 },
 
                 stopFullSurah() {
