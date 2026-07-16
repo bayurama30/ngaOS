@@ -357,6 +357,7 @@
                     this.loadBookmarks();
                     this.loadSurah();
                     this.setupSwipeGesture();
+                    this.setupMouseDrag();
                 },
 
                 setupSwipeGesture() {
@@ -398,6 +399,49 @@
                         this.touchStartY = 0;
                         this.isSwiping = false;
                     }, { passive: true });
+                },
+
+                setupMouseDrag() {
+                    const mainContent = document.querySelector('main');
+                    if (!mainContent) return;
+
+                    let mouseDown = false;
+                    let startX = 0;
+                    let startY = 0;
+
+                    mainContent.addEventListener('mousedown', (e) => {
+                        mouseDown = true;
+                        startX = e.clientX;
+                        startY = e.clientY;
+                        mainContent.style.cursor = 'grabbing';
+                    });
+
+                    mainContent.addEventListener('mousemove', (e) => {
+                        if (!mouseDown) return;
+                        e.preventDefault();
+                    });
+
+                    mainContent.addEventListener('mouseup', (e) => {
+                        if (!mouseDown) return;
+                        mouseDown = false;
+                        mainContent.style.cursor = '';
+
+                        const deltaX = e.clientX - startX;
+                        const deltaY = Math.abs(e.clientY - startY);
+
+                        if (Math.abs(deltaX) >= 50 && deltaY < Math.abs(deltaX)) {
+                            if (deltaX > 0 && this.currentSurahNumber > 1) {
+                                window.location.href = `/quran/${this.currentSurahNumber - 1}`;
+                            } else if (deltaX < 0 && this.hasNextSurah) {
+                                window.location.href = `/quran/${this.currentSurahNumber + 1}`;
+                            }
+                        }
+                    });
+
+                    mainContent.addEventListener('mouseleave', () => {
+                        mouseDown = false;
+                        mainContent.style.cursor = '';
+                    });
                 },
 
                 loadSettings() {
