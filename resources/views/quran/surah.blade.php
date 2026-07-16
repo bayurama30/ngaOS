@@ -216,18 +216,42 @@
                 </div>
             </template>
 
-            {{-- Next Surah Button --}}
-            <div x-show="hasNextSurah && !loadingNext" class="py-6 text-center">
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                    <svg class="w-12 h-12 text-teal-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 5v14m0 0l-6-6m6 6l6-6"/>
-                    </svg>
-                    <p class="text-gray-600 mb-1">Selesai membaca surat ini?</p>
-                    <p class="text-lg font-bold text-gray-800 mb-1" x-text="nextSurahName"></p>
-                    <p class="text-sm text-gray-500 mb-4">Lanjut ke surat berikutnya</p>
-                    <button @click="goToNextSurah()" class="bg-teal-600 text-white px-8 py-3 rounded-xl font-medium hover:bg-teal-700 transition shadow-sm">
-                        Lanjut ke Surat Berikutnya
-                    </button>
+            {{-- Surah Navigation --}}
+            <div x-show="!loadingNext" class="py-4">
+                <div class="flex items-center justify-between bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    {{-- Previous Surah --}}
+                    <a x-show="currentSurahNumber > 1" 
+                       :href="`/quran/${currentSurahNumber - 1}`"
+                       class="flex items-center px-4 py-3 hover:bg-gray-50 transition flex-1">
+                        <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        <div class="text-left">
+                            <p class="text-xs text-gray-400">Sebelumnya</p>
+                            <p class="text-sm font-medium text-gray-700 truncate" x-text="prevSurahName"></p>
+                        </div>
+                    </a>
+                    <div x-show="currentSurahNumber <= 1" class="flex-1"></div>
+
+                    {{-- Center Info --}}
+                    <div class="px-3 py-3 text-center border-x border-gray-100">
+                        <p class="text-xs text-gray-400">Surat</p>
+                        <p class="text-sm font-bold text-teal-600" x-text="currentSurahNumber"></p>
+                    </div>
+
+                    {{-- Next Surah --}}
+                    <a x-show="hasNextSurah" 
+                       :href="`/quran/${currentSurahNumber + 1}`"
+                       class="flex items-center px-4 py-3 hover:bg-gray-50 transition flex-1 justify-end">
+                        <div class="text-right">
+                            <p class="text-xs text-gray-400">Selanjutnya</p>
+                            <p class="text-sm font-medium text-gray-700 truncate" x-text="nextSurahName"></p>
+                        </div>
+                        <svg class="w-5 h-5 text-gray-400 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                    <div x-show="!hasNextSurah" class="flex-1"></div>
                 </div>
             </div>
 
@@ -322,6 +346,7 @@
                 hasNextSurah: true,
                 loadingNext: false,
                 nextSurahName: '',
+                prevSurahName: '',
 
                 init() {
                     this.loadSettings();
@@ -402,7 +427,10 @@
                             this.hasNextSurah = this.currentSurahNumber < 114;
                             
                             if (this.hasNextSurah) {
-                                this.loadNextSurahName();
+                                this.loadSurahName(this.currentSurahNumber + 1, 'next');
+                            }
+                            if (this.currentSurahNumber > 1) {
+                                this.loadSurahName(this.currentSurahNumber - 1, 'prev');
                             }
 
                             localStorage.setItem(`quran_surah_${this.currentSurahNumber}`, JSON.stringify({
@@ -432,15 +460,24 @@
                     this.loading = false;
                 },
 
-                async loadNextSurahName() {
+                async loadSurahName(number, type) {
                     try {
-                        const response = await fetch(`/api/muslim/quran/surah/${this.currentSurahNumber + 1}`);
+                        const cached = localStorage.getItem(`quran_surah_${number}`);
+                        if (cached) {
+                            const data = JSON.parse(cached);
+                            if (type === 'next') this.nextSurahName = data.name_latin;
+                            if (type === 'prev') this.prevSurahName = data.name_latin;
+                            return;
+                        }
+
+                        const response = await fetch(`/api/muslim/quran/surah/${number}`);
                         const data = await response.json();
                         if (data) {
-                            this.nextSurahName = `${data.name_latin} (${data.name})`;
+                            if (type === 'next') this.nextSurahName = data.name_latin;
+                            if (type === 'prev') this.prevSurahName = data.name_latin;
                         }
                     } catch (error) {
-                        console.error('Error loading next surah name:', error);
+                        console.error('Error loading surah name:', error);
                     }
                 },
 
@@ -478,12 +515,6 @@
                     }
                     
                     this.loadingNext = false;
-                },
-
-                goToNextSurah() {
-                    if (this.hasNextSurah) {
-                        window.location.href = `/quran/${this.currentSurahNumber + 1}`;
-                    }
                 },
 
                 scrollToAyah(ayahNumber) {
