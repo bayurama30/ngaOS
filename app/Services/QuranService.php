@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Collection;
 
 class QuranService
@@ -86,7 +87,16 @@ class QuranService
 
     public function getRandomAyah(): ?array
     {
-        return $this->api->get('/quran/random');
+        $response = Http::timeout(15)->get(config('muslim.api_url') . '/quran/random', [
+            '_' => time(),
+        ]);
+
+        if ($response->successful()) {
+            $data = $response->json();
+            return $data['data'] ?? $data;
+        }
+
+        return null;
     }
 
     public function search(string $query, int $limit = 10): ?array
