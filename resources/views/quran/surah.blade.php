@@ -347,11 +347,44 @@
                 loadingNext: false,
                 nextSurahName: '',
                 prevSurahName: '',
+                touchStartX: 0,
+                touchStartY: 0,
+                touchEndX: 0,
+                touchEndY: 0,
+                swipeThreshold: 100,
 
                 init() {
                     this.loadSettings();
                     this.loadBookmarks();
                     this.loadSurah();
+                    this.setupSwipeGesture();
+                },
+
+                setupSwipeGesture() {
+                    document.addEventListener('touchstart', (e) => {
+                        this.touchStartX = e.changedTouches[0].screenX;
+                        this.touchStartY = e.changedTouches[0].screenY;
+                    }, { passive: true });
+
+                    document.addEventListener('touchend', (e) => {
+                        this.touchEndX = e.changedTouches[0].screenX;
+                        this.touchEndY = e.changedTouches[0].screenY;
+                        this.handleSwipe();
+                    }, { passive: true });
+                },
+
+                handleSwipe() {
+                    const deltaX = this.touchEndX - this.touchStartX;
+                    const deltaY = Math.abs(this.touchEndY - this.touchStartY);
+
+                    if (Math.abs(deltaX) < this.swipeThreshold) return;
+                    if (deltaY > Math.abs(deltaX)) return;
+
+                    if (deltaX > 0 && this.currentSurahNumber > 1) {
+                        window.location.href = `/quran/${this.currentSurahNumber - 1}`;
+                    } else if (deltaX < 0 && this.hasNextSurah) {
+                        window.location.href = `/quran/${this.currentSurahNumber + 1}`;
+                    }
                 },
 
                 loadSettings() {
