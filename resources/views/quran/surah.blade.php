@@ -43,8 +43,8 @@
             <p class="text-gray-500 mt-3">Memuat surat...</p>
         </div>
 
-        {{-- Surah Header --}}
-        <div x-show="!loading && surah" class="bg-gradient-to-br from-teal-600 to-teal-700 rounded-2xl p-5 mb-4 text-white text-center">
+        {{-- Surah Header (Swipeable) --}}
+        <div id="surah-header" x-show="!loading && surah" class="bg-gradient-to-br from-teal-600 to-teal-700 rounded-2xl p-5 mb-4 text-white text-center cursor-grab active:cursor-grabbing select-none">
             <p class="text-teal-100 text-sm" x-text="surah?.revelation"></p>
             <h2 class="text-2xl font-bold mt-1" x-text="surah?.name_latin"></h2>
             <p class="text-teal-100" x-text="surah?.translation"></p>
@@ -185,8 +185,8 @@
             </div>
         </div>
 
-        {{-- Ayat --}}
-        <div x-show="!loading && surah" class="space-y-4">
+        {{-- Ayat (Swipeable) --}}
+        <div id="ayahs-container" x-show="!loading && surah" class="space-y-4 cursor-grab active:cursor-grabbing select-none">
             <template x-for="(ayah, index) in ayahs" :key="`${currentSurahNumber}-${index}`">
                 <div :id="`ayah-${ayah.ayah_number}`" 
                      :class="[
@@ -387,122 +387,121 @@
                     this.loadSettings();
                     this.loadBookmarks();
                     this.loadSurah();
-                    this.setupSwipeGesture();
-                    this.setupMouseDrag();
                 },
 
                 setupSwipeGesture() {
-                    const mainContent = document.querySelector('main');
-                    if (!mainContent) return;
+                    const elements = document.querySelectorAll('#surah-header, #ayahs-container');
+                    if (!elements.length) return;
 
-                    mainContent.addEventListener('touchstart', (e) => {
-                        this.touchStartX = e.touches[0].clientX;
-                        this.touchStartY = e.touches[0].clientY;
-                        this.isSwiping = false;
-                        this.swipeDirection = '';
-                        this.swipeProgress = 0;
-                    }, { passive: true });
+                    elements.forEach(el => {
+                        el.addEventListener('touchstart', (e) => {
+                            this.touchStartX = e.touches[0].clientX;
+                            this.touchStartY = e.touches[0].clientY;
+                            this.isSwiping = false;
+                            this.swipeDirection = '';
+                            this.swipeProgress = 0;
+                        }, { passive: true });
 
-                    mainContent.addEventListener('touchmove', (e) => {
-                        if (!this.touchStartX) return;
-                        
-                        const deltaX = e.touches[0].clientX - this.touchStartX;
-                        const deltaY = Math.abs(e.touches[0].clientY - this.touchStartY);
-                        
-                        if (Math.abs(deltaX) > 30 && deltaY < Math.abs(deltaX)) {
-                            this.isSwiping = true;
-                            this.swipeDirection = deltaX > 0 ? 'right' : 'left';
-                            this.swipeProgress = Math.min(Math.abs(deltaX) / this.swipeThreshold, 1);
-                        }
-                    }, { passive: true });
-
-                    mainContent.addEventListener('touchend', (e) => {
-                        if (!this.touchStartX) return;
-                        
-                        const touchEndX = e.changedTouches[0].clientX;
-                        const deltaX = touchEndX - this.touchStartX;
-                        
-                        if (this.isSwiping && Math.abs(deltaX) >= this.swipeThreshold) {
-                            if (deltaX > 0 && this.currentSurahNumber > 1) {
-                                this.navigateWithAnimation('prev');
-                            } else if (deltaX < 0 && this.hasNextSurah) {
-                                this.navigateWithAnimation('next');
+                        el.addEventListener('touchmove', (e) => {
+                            if (!this.touchStartX) return;
+                            
+                            const deltaX = e.touches[0].clientX - this.touchStartX;
+                            const deltaY = Math.abs(e.touches[0].clientY - this.touchStartY);
+                            
+                            if (Math.abs(deltaX) > 30 && deltaY < Math.abs(deltaX)) {
+                                this.isSwiping = true;
+                                this.swipeDirection = deltaX > 0 ? 'right' : 'left';
+                                this.swipeProgress = Math.min(Math.abs(deltaX) / this.swipeThreshold, 1);
                             }
-                        }
-                        
-                        this.touchStartX = 0;
-                        this.touchStartY = 0;
-                        this.isSwiping = false;
-                        this.swipeDirection = '';
-                        this.swipeProgress = 0;
-                    }, { passive: true });
+                        }, { passive: true });
+
+                        el.addEventListener('touchend', (e) => {
+                            if (!this.touchStartX) return;
+                            
+                            const touchEndX = e.changedTouches[0].clientX;
+                            const deltaX = touchEndX - this.touchStartX;
+                            
+                            if (this.isSwiping && Math.abs(deltaX) >= this.swipeThreshold) {
+                                if (deltaX > 0 && this.currentSurahNumber > 1) {
+                                    this.navigateWithAnimation('prev');
+                                } else if (deltaX < 0 && this.hasNextSurah) {
+                                    this.navigateWithAnimation('next');
+                                }
+                            }
+                            
+                            this.touchStartX = 0;
+                            this.touchStartY = 0;
+                            this.isSwiping = false;
+                            this.swipeDirection = '';
+                            this.swipeProgress = 0;
+                        }, { passive: true });
+                    });
                 },
 
                 setupMouseDrag() {
-                    const mainContent = document.querySelector('main');
-                    if (!mainContent) return;
+                    const elements = document.querySelectorAll('#surah-header, #ayahs-container');
+                    if (!elements.length) return;
 
-                    let mouseDown = false;
-                    let startX = 0;
-                    let startY = 0;
+                    elements.forEach(el => {
+                        let mouseDown = false;
+                        let startX = 0;
+                        let startY = 0;
 
-                    mainContent.addEventListener('mousedown', (e) => {
-                        mouseDown = true;
-                        startX = e.clientX;
-                        startY = e.clientY;
-                        mainContent.style.cursor = 'grabbing';
-                        this.swipeDirection = '';
-                        this.swipeProgress = 0;
-                    });
+                        el.addEventListener('mousedown', (e) => {
+                            mouseDown = true;
+                            startX = e.clientX;
+                            startY = e.clientY;
+                            this.swipeDirection = '';
+                            this.swipeProgress = 0;
+                        });
 
-                    mainContent.addEventListener('mousemove', (e) => {
-                        if (!mouseDown) return;
-                        e.preventDefault();
-                        
-                        const deltaX = e.clientX - startX;
-                        const deltaY = Math.abs(e.clientY - startY);
-                        
-                        if (Math.abs(deltaX) > 30 && deltaY < Math.abs(deltaX)) {
-                            this.swipeDirection = deltaX > 0 ? 'right' : 'left';
-                            this.swipeProgress = Math.min(Math.abs(deltaX) / this.swipeThreshold, 1);
-                        }
-                    });
-
-                    mainContent.addEventListener('mouseup', (e) => {
-                        if (!mouseDown) return;
-                        mouseDown = false;
-                        mainContent.style.cursor = '';
-
-                        const deltaX = e.clientX - startX;
-                        const deltaY = Math.abs(e.clientY - startY);
-
-                        if (Math.abs(deltaX) >= this.swipeThreshold && deltaY < Math.abs(deltaX)) {
-                            if (deltaX > 0 && this.currentSurahNumber > 1) {
-                                this.navigateWithAnimation('prev');
-                            } else if (deltaX < 0 && this.hasNextSurah) {
-                                this.navigateWithAnimation('next');
+                        el.addEventListener('mousemove', (e) => {
+                            if (!mouseDown) return;
+                            e.preventDefault();
+                            
+                            const deltaX = e.clientX - startX;
+                            const deltaY = Math.abs(e.clientY - startY);
+                            
+                            if (Math.abs(deltaX) > 30 && deltaY < Math.abs(deltaX)) {
+                                this.swipeDirection = deltaX > 0 ? 'right' : 'left';
+                                this.swipeProgress = Math.min(Math.abs(deltaX) / this.swipeThreshold, 1);
                             }
-                        }
-                        
-                        this.swipeDirection = '';
-                        this.swipeProgress = 0;
-                    });
+                        });
 
-                    mainContent.addEventListener('mouseleave', () => {
-                        mouseDown = false;
-                        mainContent.style.cursor = '';
-                        this.swipeDirection = '';
-                        this.swipeProgress = 0;
+                        el.addEventListener('mouseup', (e) => {
+                            if (!mouseDown) return;
+                            mouseDown = false;
+
+                            const deltaX = e.clientX - startX;
+                            const deltaY = Math.abs(e.clientY - startY);
+
+                            if (Math.abs(deltaX) >= this.swipeThreshold && deltaY < Math.abs(deltaX)) {
+                                if (deltaX > 0 && this.currentSurahNumber > 1) {
+                                    this.navigateWithAnimation('prev');
+                                } else if (deltaX < 0 && this.hasNextSurah) {
+                                    this.navigateWithAnimation('next');
+                                }
+                            }
+                            
+                            this.swipeDirection = '';
+                            this.swipeProgress = 0;
+                        });
+
+                        el.addEventListener('mouseleave', () => {
+                            mouseDown = false;
+                            this.swipeDirection = '';
+                            this.swipeProgress = 0;
+                        });
                     });
                 },
 
                 navigateWithAnimation(direction) {
-                    const mainContent = document.querySelector('main');
-                    if (!mainContent) return;
+                    const container = document.getElementById('ayahs-container');
+                    if (!container) return;
 
-                    mainContent.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
-                    mainContent.style.transform = direction === 'next' ? 'translateX(-100px)' : 'translateX(100px)';
-                    mainContent.style.opacity = '0';
+                    container.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+                    container.style.transform = direction === 'next' ? 'translateX(-100px)' : 'translateX(100px)';
+                    container.style.opacity = '0';
 
                     setTimeout(() => {
                         if (direction === 'next' && this.hasNextSurah) {
@@ -617,6 +616,11 @@
                         console.error('Error loading surah:', error);
                     }
                     this.loading = false;
+                    
+                    this.$nextTick(() => {
+                        this.setupSwipeGesture();
+                        this.setupMouseDrag();
+                    });
                 },
 
                 async loadSurahName(number, type) {
