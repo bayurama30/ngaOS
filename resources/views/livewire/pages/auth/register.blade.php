@@ -19,22 +19,28 @@ new #[Layout('layouts.guest')] class extends Component
 
     public function register(): void
     {
+        $fullPhone = $this->phone_country . $this->phone;
+
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'phone' => ['required', 'string', 'max:20', 'unique:'.User::class],
-            'phone_country' => ['required', 'string', 'max:5'],
-            'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
+            'phone' => ['required', 'string', 'max:20'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
-        $validated['password'] = Hash::make($validated['password']);
-        $validated['phone'] = $this->phone_country . $this->phone;
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $fullPhone,
+            'phone_country' => $this->phone_country,
+            'password' => Hash::make($validated['password']),
+        ]);
 
-        event(new Registered($user = User::create($validated)));
+        event(new Registered($user));
 
         Auth::login($user);
 
-        $this->redirect(route('dashboard', absolute: false), navigate: true);
+        $this->redirect(route('dashboard'));
     }
 
     public function getCountryCodes(): array
@@ -70,93 +76,65 @@ new #[Layout('layouts.guest')] class extends Component
 
     <form wire:submit.prevent="register">
         <div class="space-y-4">
-            <!-- Name -->
             <div>
                 <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
-                <input wire:model="name" id="name"
-                    class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                    type="text" name="name" required autofocus autocomplete="name"
-                    placeholder="Masukkan nama lengkap">
-                @error('name')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                @enderror
+                <input wire:model.live="name" id="name"
+                    class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    type="text" required autofocus placeholder="Masukkan nama lengkap">
+                @error('name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
-            <!-- Phone -->
             <div>
                 <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">No. HP</label>
                 <div class="flex space-x-2">
-                    <select wire:model="phone_country" class="w-24 border border-gray-200 rounded-xl px-3 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm">
+                    <select wire:model.live="phone_country" class="w-24 border border-gray-200 rounded-xl px-3 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm">
                         @foreach($this->getCountryCodes() as $country)
                             <option value="{{ $country['code'] }}">{{ $country['flag'] }} {{ $country['code'] }}</option>
                         @endforeach
                     </select>
-                    <input wire:model="phone" id="phone"
-                        class="flex-1 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                        type="tel" name="phone" required autocomplete="tel"
-                        placeholder="08xxxxxxxxxx">
+                    <input wire:model.live="phone" id="phone"
+                        class="flex-1 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        type="tel" required placeholder="08xxxxxxxxxx">
                 </div>
-                @error('phone')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                @enderror
+                @error('phone') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
-            <!-- Email -->
             <div>
                 <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input wire:model="email" id="email"
-                    class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                    type="email" name="email" required autocomplete="username"
-                    placeholder="email@example.com">
-                @error('email')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                @enderror
+                <input wire:model.live="email" id="email"
+                    class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    type="email" required placeholder="email@example.com">
+                @error('email') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
-            <!-- Password -->
             <div>
                 <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                <input wire:model="password" id="password"
-                    class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                    type="password" name="password" required autocomplete="new-password"
-                    placeholder="Minimal 8 karakter">
-                @error('password')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                @enderror
+                <input wire:model.live="password" id="password"
+                    class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    type="password" required placeholder="Minimal 8 karakter">
+                @error('password') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
-            <!-- Confirm Password -->
             <div>
                 <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">Konfirmasi Password</label>
-                <input wire:model="password_confirmation" id="password_confirmation"
-                    class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                    type="password" name="password_confirmation" required autocomplete="new-password"
-                    placeholder="Ulangi password">
+                <input wire:model.live="password_confirmation" id="password_confirmation"
+                    class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    type="password" required placeholder="Ulangi password">
             </div>
         </div>
 
-        <!-- Submit Button -->
         <button type="submit"
-            class="w-full mt-6 bg-teal-600 text-white py-3 rounded-xl font-medium hover:bg-teal-700 transition focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:opacity-50"
+            class="w-full mt-6 bg-teal-600 text-white py-3 rounded-xl font-medium hover:bg-teal-700 transition disabled:opacity-50"
             wire:loading.attr="disabled">
             <span wire:loading.remove>Daftar</span>
-            <span wire:loading class="inline-flex items-center">
-                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Memproses...
-            </span>
+            <span wire:loading>Memproses...</span>
         </button>
     </form>
 
-    <!-- Login Link -->
     <div class="text-center mt-6 pt-4 border-t border-gray-100">
         <p class="text-sm text-gray-500">
             Sudah punya akun?
-            <a href="{{ route('login') }}" class="text-teal-600 font-medium hover:text-teal-700" wire:navigate>
-                Masuk di sini
-            </a>
+            <a href="{{ route('login') }}" class="text-teal-600 font-medium hover:text-teal-700">Masuk di sini</a>
         </p>
     </div>
 </div>
