@@ -6,34 +6,37 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Rule;
 use Livewire\Volt\Component;
 
 new #[Layout('layouts.guest')] class extends Component
 {
+    #[Rule('required|string|max:255')]
     public string $name = '';
+
+    #[Rule('required|email|max:255|unique:users,email')]
     public string $email = '';
+
+    #[Rule('required|string|max:20')]
     public string $phone = '';
+
     public string $phone_country = '+62';
+
+    #[Rule('required|string|min:8|confirmed')]
     public string $password = '';
+
     public string $password_confirmation = '';
 
     public function register(): void
     {
-        $fullPhone = $this->phone_country . $this->phone;
-
-        $validated = $this->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
-            'phone' => ['required', 'string', 'max:20'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-        ]);
+        $this->validate();
 
         $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone' => $fullPhone,
+            'name' => $this->name,
+            'email' => $this->email,
+            'phone' => $this->phone_country . $this->phone,
             'phone_country' => $this->phone_country,
-            'password' => Hash::make($validated['password']),
+            'password' => Hash::make($this->password),
         ]);
 
         event(new Registered($user));

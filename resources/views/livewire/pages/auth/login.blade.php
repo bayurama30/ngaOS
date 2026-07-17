@@ -3,15 +3,29 @@
 use App\Livewire\Forms\LoginForm;
 use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Rule;
 use Livewire\Volt\Component;
 
 new #[Layout('layouts.guest')] class extends Component
 {
     public LoginForm $form;
 
+    #[Rule('required|string')]
+    public string $login = '';
+
+    #[Rule('required|string')]
+    public string $password = '';
+
+    #[Rule('boolean')]
+    public bool $remember = false;
+
     public function login(): void
     {
         $this->validate();
+
+        $this->form->login = $this->login;
+        $this->form->password = $this->password;
+        $this->form->remember = $this->remember;
 
         $this->form->authenticate();
 
@@ -33,10 +47,10 @@ new #[Layout('layouts.guest')] class extends Component
         <div class="space-y-4">
             <div>
                 <label for="login" class="block text-sm font-medium text-gray-700 mb-1">Email atau No. HP</label>
-                <input wire:model.live="form.login" id="login"
+                <input wire:model.live="login" id="login"
                     class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
                     type="text" required autofocus placeholder="email@example.com atau 08xxxxxxxxxx">
-                @error('form.login') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                @error('login') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div>
@@ -48,15 +62,15 @@ new #[Layout('layouts.guest')] class extends Component
                         </a>
                     @endif
                 </div>
-                <input wire:model.live="form.password" id="password"
+                <input wire:model.live="password" id="password"
                     class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
                     type="password" required placeholder="Masukkan password">
-                @error('form.password') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                @error('password') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div class="flex items-center">
                 <label for="remember" class="inline-flex items-center cursor-pointer">
-                    <input wire:model.live="form.remember" id="remember" type="checkbox"
+                    <input wire:model.live="remember" id="remember" type="checkbox"
                         class="rounded border-gray-300 text-teal-600 shadow-sm focus:ring-teal-500">
                     <span class="ms-2 text-sm text-gray-600">Ingat saya</span>
                 </label>
