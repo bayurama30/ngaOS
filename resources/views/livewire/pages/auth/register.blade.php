@@ -77,6 +77,16 @@ new #[Layout('layouts.guest')] class extends Component
         <p class="text-sm text-gray-500 mt-1">Daftar untuk mulai menggunakan NgaOS</p>
     </div>
 
+    @if ($errors->any())
+        <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+            <ul class="text-sm text-red-600">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <form wire:submit.prevent="register">
         <div class="space-y-4">
             <div>

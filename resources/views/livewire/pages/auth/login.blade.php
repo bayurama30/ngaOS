@@ -18,7 +18,6 @@ new #[Layout('layouts.guest')] class extends Component
         return [
             'login' => ['required', 'string'],
             'password' => ['required', 'string'],
-            'remember' => ['boolean'],
         ];
     }
 
@@ -30,7 +29,12 @@ new #[Layout('layouts.guest')] class extends Component
         $this->form->password = $this->password;
         $this->form->remember = $this->remember;
 
-        $this->form->authenticate();
+        try {
+            $this->form->authenticate();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->reset('password');
+            throw $e;
+        }
 
         Session::regenerate();
 
@@ -45,6 +49,16 @@ new #[Layout('layouts.guest')] class extends Component
         <h2 class="text-2xl font-bold text-gray-800">Masuk ke Akun</h2>
         <p class="text-sm text-gray-500 mt-1">Silakan masuk untuk melanjutkan</p>
     </div>
+
+    @if ($errors->any())
+        <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+            <ul class="text-sm text-red-600">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
     <form wire:submit.prevent="login">
         <div class="space-y-4">
