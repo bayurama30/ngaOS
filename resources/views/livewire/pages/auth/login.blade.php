@@ -1,75 +1,14 @@
-<?php
-
-use App\Models\User;
-use Illuminate\Auth\Events\Lockout;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
-use Livewire\Attributes\Layout;
-use Livewire\Volt\Component;
-
-new #[Layout('layouts.guest')] class extends Component
-{
-    public string $login = '';
-    public string $password = '';
-    public bool $remember = false;
-
-    public function login(): void
-    {
-        $this->validate([
-            'login' => 'required|string',
-            'password' => 'required|string',
-        ]);
-
-        $this->ensureIsNotRateLimited();
-
-        $field = filter_var($this->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
-
-        if (!Auth::attempt([$field => $this->login, 'password' => $this->password], $this->remember)) {
-            RateLimiter::hit($this->throttleKey());
-
-            $this->addError('login', 'Email/HP atau password salah.');
-            $this->reset('password');
-            return;
-        }
-
-        RateLimiter::clear($this->throttleKey());
-
-        Session::regenerate();
-
-        $this->redirectIntended(default: route('dashboard'));
-    }
-
-    protected function ensureIsNotRateLimited(): void
-    {
-        if (!RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
-            return;
-        }
-
-        event(new Lockout(request()));
-
-        $seconds = RateLimiter::availableIn($this->throttleKey());
-
-        $this->addError('login', 'Terlalu banyak percobaan. Coba lagi dalam ' . ceil($seconds / 60) . ' menit.');
-
-        $this->stopPropagation();
-    }
-
-    protected function throttleKey(): string
-    {
-        return Str::transliterate(Str::lower($this->login) . '|' . request()->ip());
-    }
-}; ?>
-
-<div>
-    <x-auth-session-status class="mb-4" :status="session('status')" />
-
+<x-guest-layout>
     <div class="text-center mb-6">
         <h2 class="text-2xl font-bold text-gray-800">Masuk ke Akun</h2>
         <p class="text-sm text-gray-500 mt-1">Silakan masuk untuk melanjutkan</p>
     </div>
+
+    @if (session('status'))
+        <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-4">
+            <p class="text-sm text-green-600">{{ session('status') }}</p>
+        </div>
+    @endif
 
     @if ($errors->any())
         <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
@@ -138,4 +77,4 @@ new #[Layout('layouts.guest')] class extends Component
             <a href="{{ route('register') }}" class="text-teal-600 font-medium hover:text-teal-700">Daftar di sini</a>
         </p>
     </div>
-</div>
+</x-guest-layout>
