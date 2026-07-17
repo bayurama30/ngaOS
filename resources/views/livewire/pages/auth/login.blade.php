@@ -3,21 +3,24 @@
 use App\Livewire\Forms\LoginForm;
 use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Layout;
-use Livewire\Attributes\Rule;
 use Livewire\Volt\Component;
 
 new #[Layout('layouts.guest')] class extends Component
 {
     public LoginForm $form;
 
-    #[Rule('required|string')]
     public string $login = '';
-
-    #[Rule('required|string')]
     public string $password = '';
-
-    #[Rule('boolean')]
     public bool $remember = false;
+
+    protected function rules(): array
+    {
+        return [
+            'login' => ['required', 'string'],
+            'password' => ['required', 'string'],
+            'remember' => ['boolean'],
+        ];
+    }
 
     public function login(): void
     {
