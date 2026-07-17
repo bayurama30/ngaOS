@@ -1,44 +1,65 @@
 <?php
 
-use App\Livewire\Forms\LoginForm;
+use App\Models\User;
+use Illuminate\Auth\Events\Lockout;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 
 new #[Layout('layouts.guest')] class extends Component
 {
-    public LoginForm $form;
-
     public string $login = '';
     public string $password = '';
     public bool $remember = false;
 
-    protected function rules(): array
-    {
-        return [
-            'login' => ['required', 'string'],
-            'password' => ['required', 'string'],
-        ];
-    }
-
     public function login(): void
     {
-        $this->validate();
+        $this->validate([
+            'login' => 'required|string',
+            'password' => 'required|string',
+        ]);
 
-        $this->form->login = $this->login;
-        $this->form->password = $this->password;
-        $this->form->remember = $this->remember;
+        $this->ensureIsNotRateLimited();
 
-        try {
-            $this->form->authenticate();
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        $field = filter_var($this->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
+
+        if (!Auth::attempt([$field => $this->login, 'password' => $this->password], $this->remember)) {
+            RateLimiter::hit($this->throttleKey());
+
+            $this->addError('login', 'Email/HP atau password salah.');
             $this->reset('password');
-            throw $e;
+            return;
         }
+
+        RateLimiter::clear($this->throttleKey());
 
         Session::regenerate();
 
         $this->redirectIntended(default: route('dashboard'));
+    }
+
+    protected function ensureIsNotRateLimited(): void
+    {
+        if (!RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+            return;
+        }
+
+        event(new Lockout(request()));
+
+        $seconds = RateLimiter::availableIn($this->throttleKey());
+
+        $this->addError('login', 'Terlalu banyak percobaan. Coba lagi dalam ' . ceil($seconds / 60) . ' menit.');
+
+        $this->stopPropagation();
+    }
+
+    protected function throttleKey(): string
+    {
+        return Str::transliterate(Str::lower($this->login) . '|' . request()->ip());
     }
 }; ?>
 
@@ -52,9 +73,14 @@ new #[Layout('layouts.guest')] class extends Component
 
     @if ($errors->any())
         <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
-            <ul class="text-sm text-red-600">
+            <ul class="text-sm text-red-600 space-y-1">
                 @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
+                    <li class="flex items-start">
+                        <svg class="w-4 h-4 mr-1.5 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>{{ $error }}</span>
+                    </li>
                 @endforeach
             </ul>
         </div>
@@ -67,7 +93,6 @@ new #[Layout('layouts.guest')] class extends Component
                 <input wire:model.live="login" id="login"
                     class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
                     type="text" required autofocus placeholder="email@example.com atau 08xxxxxxxxxx">
-                @error('login') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div>
@@ -82,7 +107,6 @@ new #[Layout('layouts.guest')] class extends Component
                 <input wire:model.live="password" id="password"
                     class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
                     type="password" required placeholder="Masukkan password">
-                @error('password') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div class="flex items-center">
@@ -98,7 +122,13 @@ new #[Layout('layouts.guest')] class extends Component
             class="w-full mt-6 bg-teal-600 text-white py-3 rounded-xl font-medium hover:bg-teal-700 transition disabled:opacity-50"
             wire:loading.attr="disabled">
             <span wire:loading.remove>Masuk</span>
-            <span wire:loading>Memproses...</span>
+            <span wire:loading class="inline-flex items-center">
+                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Memproses...
+            </span>
         </button>
     </form>
 

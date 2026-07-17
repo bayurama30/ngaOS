@@ -17,19 +17,14 @@ new #[Layout('layouts.guest')] class extends Component
     public string $password = '';
     public string $password_confirmation = '';
 
-    protected function rules(): array
+    public function register(): void
     {
-        return [
+        $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['required', 'string', 'max:20'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-        ];
-    }
-
-    public function register(): void
-    {
-        $this->validate();
+        ]);
 
         $user = User::create([
             'name' => $this->name,
@@ -79,9 +74,14 @@ new #[Layout('layouts.guest')] class extends Component
 
     @if ($errors->any())
         <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
-            <ul class="text-sm text-red-600">
+            <ul class="text-sm text-red-600 space-y-1">
                 @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
+                    <li class="flex items-start">
+                        <svg class="w-4 h-4 mr-1.5 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>{{ $error }}</span>
+                    </li>
                 @endforeach
             </ul>
         </div>
@@ -94,7 +94,6 @@ new #[Layout('layouts.guest')] class extends Component
                 <input wire:model.live="name" id="name"
                     class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
                     type="text" required autofocus placeholder="Masukkan nama lengkap">
-                @error('name') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div>
@@ -109,7 +108,6 @@ new #[Layout('layouts.guest')] class extends Component
                         class="flex-1 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
                         type="tel" required placeholder="08xxxxxxxxxx">
                 </div>
-                @error('phone') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div>
@@ -117,7 +115,6 @@ new #[Layout('layouts.guest')] class extends Component
                 <input wire:model.live="email" id="email"
                     class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
                     type="email" required placeholder="email@example.com">
-                @error('email') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div>
@@ -125,7 +122,6 @@ new #[Layout('layouts.guest')] class extends Component
                 <input wire:model.live="password" id="password"
                     class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
                     type="password" required placeholder="Minimal 8 karakter">
-                @error('password') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div>
@@ -140,7 +136,13 @@ new #[Layout('layouts.guest')] class extends Component
             class="w-full mt-6 bg-teal-600 text-white py-3 rounded-xl font-medium hover:bg-teal-700 transition disabled:opacity-50"
             wire:loading.attr="disabled">
             <span wire:loading.remove>Daftar</span>
-            <span wire:loading>Memproses...</span>
+            <span wire:loading class="inline-flex items-center">
+                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Memproses...
+            </span>
         </button>
     </form>
 
