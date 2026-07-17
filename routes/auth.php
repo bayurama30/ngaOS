@@ -11,11 +11,11 @@ Route::middleware('guest')->group(function () {
     Route::get('login', [\App\Http\Controllers\Auth\LoginController::class, 'show'])->name('login');
     Route::post('login', [\App\Http\Controllers\Auth\LoginController::class, 'store']);
 
-    Volt::route('forgot-password', 'pages.auth.forgot-password')
-        ->name('password.request');
-
-    Volt::route('reset-password/{token}', 'pages.auth.reset-password')
-        ->name('password.reset');
+    // Forgot Password with OTP
+    Route::get('forgot-password', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'show'])->name('password.request');
+    Route::post('forgot-password/otp', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'sendOtp'])->name('password.otp.send');
+    Route::post('forgot-password/verify', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'verifyOtp'])->name('password.otp.verify');
+    Route::post('forgot-password/reset', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'resetPassword'])->name('password.reset');
 });
 
 Route::middleware('auth')->group(function () {
