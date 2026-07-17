@@ -29,7 +29,7 @@ new #[Layout('layouts.guest')] class extends Component
         <p class="text-sm text-gray-500 mt-1">Silakan masuk untuk melanjutkan</p>
     </div>
 
-    <form wire:submit="login">
+    <form wire:submit.prevent="login">
         <div class="space-y-4">
             <!-- Email or Phone -->
             <div>

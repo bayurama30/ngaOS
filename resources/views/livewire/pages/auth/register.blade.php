@@ -68,7 +68,7 @@ new #[Layout('layouts.guest')] class extends Component
         <p class="text-sm text-gray-500 mt-1">Daftar untuk mulai menggunakan NgaOS</p>
     </div>
 
-    <form wire:submit="register">
+    <form wire:submit.prevent="register">
         <div class="space-y-4">
             <!-- Name -->
             <div>
