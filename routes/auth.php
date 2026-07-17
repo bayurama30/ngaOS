@@ -8,7 +8,8 @@ Route::middleware('guest')->group(function () {
     Volt::route('register', 'pages.auth.register')
         ->name('register');
 
-    Route::get('login', \App\Livewire\Pages\Auth\Login::class)->name('login');
+    Route::get('login', [\App\Http\Controllers\Auth\LoginController::class, 'show'])->name('login');
+    Route::post('login', [\App\Http\Controllers\Auth\LoginController::class, 'store']);
 
     Volt::route('forgot-password', 'pages.auth.forgot-password')
         ->name('password.request');
