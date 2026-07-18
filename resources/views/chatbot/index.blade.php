@@ -101,25 +101,30 @@
                 remaining: 10,
 
                 init() {
-                    this.loadHistory();
+                    this.$nextTick(() => this.loadHistory());
                 },
 
                 async loadHistory() {
                     try {
-                        const response = await fetch('/chatbot/history', {
+                        const timestamp = new Date().getTime();
+                        const response = await fetch(`/chatbot/history?t=${timestamp}`, {
                             credentials: 'same-origin',
                             headers: {
                                 'Accept': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest'
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Cache-Control': 'no-cache'
                             }
                         });
 
                         if (response.ok) {
-                            const data = await response.json();
-                            if (data.chats && Array.isArray(data.chats)) {
-                                this.chats = data.chats;
-                                this.remaining = data.remaining ?? 10;
-                                this.$nextTick(() => this.scrollToBottom());
+                            const contentType = response.headers.get('content-type');
+                            if (contentType && contentType.includes('application/json')) {
+                                const data = await response.json();
+                                if (data && data.chats && Array.isArray(data.chats)) {
+                                    this.chats = data.chats;
+                                    this.remaining = data.remaining ?? 10;
+                                    this.$nextTick(() => this.scrollToBottom());
+                                }
                             }
                         }
                     } catch (error) {
@@ -191,7 +196,7 @@
                     if (!confirm('Hapus semua percakapan?')) return;
 
                     try {
-                        await fetch('/chatbot/history', {
+                        const response = await fetch('/chatbot/history', {
                             method: 'DELETE',
                             credentials: 'same-origin',
                             headers: {
@@ -200,9 +205,13 @@
                                 'X-Requested-With': 'XMLHttpRequest'
                             }
                         });
-                        this.chats = [];
-                        this.remaining = 10;
-                        this.error = '';
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.chats = [];
+                            this.remaining = data.remaining ?? 10;
+                            this.error = '';
+                        }
                     } catch (error) {
                         console.error('Error resetting chat:', error);
                     }
