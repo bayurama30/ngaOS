@@ -2,6 +2,46 @@
 
 All notable changes to NgaOS - Islamic Web App will be documented in this file.
 
+## [1.0.3] - 2026-07-18
+
+### 🐛 Bug Fixes
+
+#### AI Chatbot
+- Fix chat history not persisting after page refresh
+- Fix quota (10/day) now properly per-user
+- Add cache-busting to history API requests
+- Add proper error handling for API responses
+- Fix remaining count synchronization
+
+#### Auth System
+- Fix login error messages not displaying
+- Fix registration form submission
+- Add proper Livewire validation with `rules()` method
+- Switch to Blade + Controller approach for stability
+
+#### Forgot Password
+- Implement OTP-based password reset
+- OTP sent to email with 10-minute expiry
+- Multi-step flow: Email → OTP → New Password
+
+#### Service Worker
+- Fix `addAll` error in service worker
+- Improve caching strategy (network-first for HTML)
+
+### ✨ New Features
+
+#### AI Chatbot
+- **Rate Limiting** - 10 chats per day per user
+- **Character Limit** - 500 characters max per message
+- **Remaining Counter** - Shows remaining chats in header
+
+#### Location Detection
+- **Auto GPS Detection** - Detect city via reverse geocoding
+- **Auto Timezone** - WIB/WITA/WIT based on coordinates
+- **City Search** - Search 517+ Indonesian cities
+
+---
+
 ## [1.0.2] - 2026-07-16
 
 ### ✨ New Features
