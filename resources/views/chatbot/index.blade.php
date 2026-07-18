@@ -8,7 +8,7 @@
         .chat-content br + br { display: block; content: ""; margin-top: 4px; }
     </style>
 
-    <div class="px-4 py-6 flex flex-col h-[calc(100vh-180px)]" x-data="chatbot()" x-init="loadHistory()">
+    <div class="px-4 py-6 flex flex-col h-[calc(100vh-180px)]" x-data="chatbot()" x-init="$nextTick(() => loadHistory())">
         <div class="flex items-center justify-between mb-4">
             <div>
                 <h2 class="text-2xl font-bold text-gray-800">AI Chatbot</h2>
@@ -16,7 +16,7 @@
             </div>
             <div class="flex items-center space-x-2">
                 <span class="text-xs px-2 py-1 rounded-full" :class="remaining <= 3 ? 'bg-red-100 text-red-600' : 'bg-teal-100 text-teal-600'" x-text="`${remaining}/10 hari ini`"></span>
-                <button @click="resetChat()" class="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition" title="Reset Sesi">
+                <button @click="resetChat()" class="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition" title="Hapus Semua Chat">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                     </svg>
@@ -29,7 +29,7 @@
         </div>
 
         <div class="flex-1 overflow-y-auto mb-4 space-y-4 scrollbar-hide" x-ref="chatContainer">
-            <div class="flex justify-center">
+            <div class="flex justify-center" x-show="chats.length === 0">
                 <div class="bg-teal-50 rounded-full px-4 py-2 text-sm text-teal-700">
                     Assalamu'alaikum! Ada yang bisa saya bantu?
                 </div>
@@ -42,7 +42,7 @@
                             <p class="text-sm" x-text="chat.message"></p>
                         </div>
                     </div>
-                    <div class="flex justify-start">
+                    <div class="flex justify-start" x-show="chat.response">
                         <div class="bg-white rounded-2xl rounded-bl-md px-4 py-2.5 max-w-[80%] shadow-sm border border-gray-100">
                             <div class="text-sm text-gray-700 chat-content" x-html="formatMessage(chat.response)"></div>
                         </div>
@@ -99,15 +99,27 @@
                 loading: false,
                 error: '',
                 remaining: {{ $remaining ?? 10 }},
+                historyLoaded: false,
 
                 async loadHistory() {
+                    if (this.historyLoaded) return;
+
                     try {
-                        const response = await fetch('/chatbot/history');
+                        const response = await fetch('/chatbot/history', {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+
                         if (response.ok) {
                             const data = await response.json();
-                            if (Array.isArray(data) && data.length > 0) {
+                            if (Array.isArray(data)) {
                                 this.chats = data;
-                                this.scrollToBottom();
+                                this.historyLoaded = true;
+                                if (data.length > 0) {
+                                    this.$nextTick(() => this.scrollToBottom());
+                                }
                             }
                         }
                     } catch (error) {
@@ -142,7 +154,8 @@
                             headers: {
                                 'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Accept': 'application/json'
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
                             },
                             body: JSON.stringify({ message: userMessage })
                         });
@@ -171,14 +184,15 @@
                 },
 
                 async resetChat() {
-                    if (!confirm('Reset semua percakapan?')) return;
+                    if (!confirm('Hapus semua percakapan?')) return;
 
                     try {
                         await fetch('/chatbot/history', {
                             method: 'DELETE',
                             headers: {
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Accept': 'application/json'
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
                             }
                         });
                         this.chats = [];
