@@ -8,7 +8,7 @@
         .chat-content br + br { display: block; content: ""; margin-top: 4px; }
     </style>
 
-    <div class="px-4 py-6 flex flex-col h-[calc(100vh-180px)]" x-data="chatbot()" x-init="$nextTick(() => loadHistory())">
+    <div class="px-4 py-6 flex flex-col h-[calc(100vh-180px)]" x-data="chatbot()" x-cloak>
         <div class="flex items-center justify-between mb-4">
             <div>
                 <h2 class="text-2xl font-bold text-gray-800">AI Chatbot</h2>
@@ -29,7 +29,7 @@
         </div>
 
         <div class="flex-1 overflow-y-auto mb-4 space-y-4 scrollbar-hide" x-ref="chatContainer">
-            <div class="flex justify-center" x-show="chats.length === 0">
+            <div class="flex justify-center" x-show="chats.length === 0 && !loading">
                 <div class="bg-teal-50 rounded-full px-4 py-2 text-sm text-teal-700">
                     Assalamu'alaikum! Ada yang bisa saya bantu?
                 </div>
@@ -79,7 +79,7 @@
             </div>
             <form @submit.prevent="sendMessage()" class="flex space-x-2">
                 <div class="flex-1 relative">
-                    <input type="text" x-model="message" :disabled="loading || remaining <= 0" placeholder="Tanya sesuatu..." maxlength="500" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 pr-16 focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50">
+                    <input type="text" x-model="message" :disabled="loading || remaining <= 0" @keydown.enter.prevent="sendMessage()" placeholder="Tanya sesuatu..." maxlength="500" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 pr-16 focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50">
                     <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs" :class="message.length > 450 ? 'text-red-500' : 'text-gray-400'" x-text="`${message.length}/500`"></span>
                 </div>
                 <button type="submit" :disabled="!message.trim() || loading || remaining <= 0" class="bg-teal-600 text-white px-4 py-2.5 rounded-xl hover:bg-teal-700 transition disabled:opacity-50">
@@ -99,13 +99,15 @@
                 loading: false,
                 error: '',
                 remaining: {{ $remaining ?? 10 }},
-                historyLoaded: false,
+
+                init() {
+                    this.loadHistory();
+                },
 
                 async loadHistory() {
-                    if (this.historyLoaded) return;
-
                     try {
                         const response = await fetch('/chatbot/history', {
+                            credentials: 'same-origin',
                             headers: {
                                 'Accept': 'application/json',
                                 'X-Requested-With': 'XMLHttpRequest'
@@ -113,11 +115,11 @@
                         });
 
                         if (response.ok) {
-                            const data = await response.json();
-                            if (Array.isArray(data)) {
-                                this.chats = data;
-                                this.historyLoaded = true;
-                                if (data.length > 0) {
+                            const contentType = response.headers.get('content-type');
+                            if (contentType && contentType.includes('application/json')) {
+                                const data = await response.json();
+                                if (Array.isArray(data) && data.length > 0) {
+                                    this.chats = data;
                                     this.$nextTick(() => this.scrollToBottom());
                                 }
                             }
@@ -151,6 +153,7 @@
                     try {
                         const response = await fetch('/chatbot/chat', {
                             method: 'POST',
+                            credentials: 'same-origin',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -160,15 +163,18 @@
                             body: JSON.stringify({ message: userMessage })
                         });
 
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
                         const data = await response.json();
 
-                        if (response.status === 429) {
-                            this.error = data.error || 'Batas chat tercapai.';
-                            this.chats.pop();
-                            this.remaining = 0;
-                        } else if (data.error) {
+                        if (data.error) {
                             this.error = data.error;
                             this.chats.pop();
+                            if (response.status === 429) {
+                                this.remaining = 0;
+                            }
                         } else {
                             this.chats[this.chats.length - 1].response = data.response;
                             this.remaining = data.remaining ?? this.remaining;
@@ -189,6 +195,7 @@
                     try {
                         await fetch('/chatbot/history', {
                             method: 'DELETE',
+                            credentials: 'same-origin',
                             headers: {
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
                                 'Accept': 'application/json',
