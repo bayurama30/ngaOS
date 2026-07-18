@@ -14,11 +14,18 @@
                 <h2 class="text-2xl font-bold text-gray-800">AI Chatbot</h2>
                 <p class="text-gray-600 mt-1">Tanya seputar Islam</p>
             </div>
-            <button @click="resetChat()" class="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition" title="Reset Sesi">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                </svg>
-            </button>
+            <div class="flex items-center space-x-2">
+                <span class="text-xs px-2 py-1 rounded-full" :class="remaining <= 3 ? 'bg-red-100 text-red-600' : 'bg-teal-100 text-teal-600'" x-text="`${remaining}/10 hari ini`"></span>
+                <button @click="resetChat()" class="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition" title="Reset Sesi">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div x-show="remaining <= 0" class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+            <p class="text-amber-700 text-sm text-center">Anda telah mencapai batas chat hari ini. Silakan coba lagi besok.</p>
         </div>
 
         <div class="flex-1 overflow-y-auto mb-4 space-y-4 scrollbar-hide" x-ref="chatContainer">
@@ -67,9 +74,15 @@
         </div>
 
         <div class="bg-white border-t border-gray-200 -mx-4 px-4 py-3">
+            <div x-show="error" class="bg-red-50 border border-red-200 rounded-xl p-3 mb-3">
+                <p class="text-red-600 text-sm" x-text="error"></p>
+            </div>
             <form @submit.prevent="sendMessage()" class="flex space-x-2">
-                <input type="text" x-model="message" :disabled="loading" placeholder="Tanya sesuatu..." class="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50">
-                <button type="submit" :disabled="!message.trim() || loading" class="bg-teal-600 text-white px-4 py-2.5 rounded-xl hover:bg-teal-700 transition disabled:opacity-50">
+                <div class="flex-1 relative">
+                    <input type="text" x-model="message" :disabled="loading || remaining <= 0" placeholder="Tanya sesuatu..." maxlength="500" class="w-full border border-gray-200 rounded-xl px-4 py-2.5 pr-16 focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50">
+                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs" :class="message.length > 450 ? 'text-red-500' : 'text-gray-400'" x-text="`${message.length}/500`"></span>
+                </div>
+                <button type="submit" :disabled="!message.trim() || loading || remaining <= 0" class="bg-teal-600 text-white px-4 py-2.5 rounded-xl hover:bg-teal-700 transition disabled:opacity-50">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
                     </svg>
@@ -84,6 +97,8 @@
                 chats: [],
                 message: '',
                 loading: false,
+                error: '',
+                remaining: {{ $remaining ?? 10 }},
 
                 async loadHistory() {
                     try {
@@ -97,7 +112,14 @@
                 },
 
                 async sendMessage() {
-                    if (!this.message.trim() || this.loading) return;
+                    if (!this.message.trim() || this.loading || this.remaining <= 0) return;
+
+                    this.error = '';
+
+                    if (this.message.length > 500) {
+                        this.error = 'Pesan maksimal 500 karakter.';
+                        return;
+                    }
 
                     const userMessage = this.message;
                     this.message = '';
@@ -123,7 +145,17 @@
 
                         const data = await response.json();
 
-                        this.chats[this.chats.length - 1].response = data.response;
+                        if (response.status === 429) {
+                            this.error = data.error || 'Batas chat tercapai.';
+                            this.chats.pop();
+                            this.remaining = 0;
+                        } else if (data.error) {
+                            this.error = data.error;
+                            this.chats.pop();
+                        } else {
+                            this.chats[this.chats.length - 1].response = data.response;
+                            this.remaining = data.remaining ?? this.remaining;
+                        }
 
                         this.scrollToBottom();
                     } catch (error) {
@@ -146,6 +178,7 @@
                             }
                         });
                         this.chats = [];
+                        this.error = '';
                     } catch (error) {
                         console.error('Error resetting chat:', error);
                     }
