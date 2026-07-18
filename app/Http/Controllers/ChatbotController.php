@@ -63,7 +63,19 @@ class ChatbotController extends Controller
 
     public function history(Request $request)
     {
-        $history = $this->chatService->getHistory($request->user()->id);
+        $history = ChatHistory::where('user_id', $request->user()->id)
+            ->latest()
+            ->limit(20)
+            ->get()
+            ->reverse()
+            ->map(function ($item) {
+                return [
+                    'message' => $item->message,
+                    'response' => $item->response,
+                ];
+            })
+            ->values()
+            ->all();
 
         return response()->json($history);
     }

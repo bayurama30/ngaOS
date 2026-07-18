@@ -103,9 +103,13 @@
                 async loadHistory() {
                     try {
                         const response = await fetch('/chatbot/history');
-                        const data = await response.json();
-                        this.chats = data;
-                        this.scrollToBottom();
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (Array.isArray(data) && data.length > 0) {
+                                this.chats = data;
+                                this.scrollToBottom();
+                            }
+                        }
                     } catch (error) {
                         console.error('Error loading history:', error);
                     }
