@@ -63,9 +63,17 @@ class ChatbotController extends Controller
 
     public function history(Request $request)
     {
-        $history = ChatHistory::where('user_id', $request->user()->id)
+        $userId = $request->user()->id;
+
+        $todayCount = ChatHistory::where('user_id', $userId)
+            ->whereDate('created_at', Carbon::today())
+            ->count();
+
+        $remaining = max(0, 10 - $todayCount);
+
+        $history = ChatHistory::where('user_id', $userId)
             ->latest()
-            ->limit(20)
+            ->limit(50)
             ->get()
             ->reverse()
             ->map(function ($item) {
@@ -77,14 +85,20 @@ class ChatbotController extends Controller
             ->values()
             ->all();
 
-        return response()->json($history);
+        return response()->json([
+            'chats' => $history,
+            'remaining' => $remaining,
+        ]);
     }
 
     public function clearHistory(Request $request)
     {
         $this->chatService->clearHistory($request->user()->id);
 
-        return response()->json(['message' => 'History cleared']);
+        return response()->json([
+            'message' => 'History cleared',
+            'remaining' => 10,
+        ]);
     }
 
     public function quickPrompts()

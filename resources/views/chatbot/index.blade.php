@@ -98,7 +98,7 @@
                 message: '',
                 loading: false,
                 error: '',
-                remaining: {{ $remaining ?? 10 }},
+                remaining: 10,
 
                 init() {
                     this.loadHistory();
@@ -115,13 +115,11 @@
                         });
 
                         if (response.ok) {
-                            const contentType = response.headers.get('content-type');
-                            if (contentType && contentType.includes('application/json')) {
-                                const data = await response.json();
-                                if (Array.isArray(data) && data.length > 0) {
-                                    this.chats = data;
-                                    this.$nextTick(() => this.scrollToBottom());
-                                }
+                            const data = await response.json();
+                            if (data.chats && Array.isArray(data.chats)) {
+                                this.chats = data.chats;
+                                this.remaining = data.remaining ?? 10;
+                                this.$nextTick(() => this.scrollToBottom());
                             }
                         }
                     } catch (error) {
@@ -203,6 +201,7 @@
                             }
                         });
                         this.chats = [];
+                        this.remaining = 10;
                         this.error = '';
                     } catch (error) {
                         console.error('Error resetting chat:', error);
