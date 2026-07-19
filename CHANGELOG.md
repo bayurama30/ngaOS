@@ -2,7 +2,7 @@
 
 All notable changes to NgaOS - Islamic Web App will be documented in this file.
 
-## [1.0.3] - 2026-07-18
+## [1.0.3] - 2026-07-19
 
 ### 🐛 Bug Fixes
 
@@ -28,6 +28,17 @@ All notable changes to NgaOS - Islamic Web App will be documented in this file.
 - Fix `addAll` error in service worker
 - Improve caching strategy (network-first for HTML)
 
+#### cPanel Deployment Fixes
+- Delete `public/create-user.php` (security risk + wrong paths)
+- Fix PrayerTimeController - remove broken methods not used in routes
+- Fix deploy.sh - create required directories before artisan commands
+- Fix deploy.sh - set permissions before running artisan commands
+- Fix deploy.sh - use `ln -sf` instead of `php artisan storage:link` (exec disabled)
+- Add placeholder PWA icons (72px-512px)
+- Add placeholder screenshot
+- Update .env.example with API keys
+- Update .env.production with database credentials
+
 ### ✨ New Features
 
 #### AI Chatbot
@@ -39,6 +50,10 @@ All notable changes to NgaOS - Islamic Web App will be documented in this file.
 - **Auto GPS Detection** - Detect city via reverse geocoding
 - **Auto Timezone** - WIB/WITA/WIT based on coordinates
 - **City Search** - Search 517+ Indonesian cities
+
+#### PWA
+- **Placeholder Icons** - PWA icons for all sizes (72px-512px)
+- **Screenshot** - PWA screenshot placeholder
 
 ---
 
