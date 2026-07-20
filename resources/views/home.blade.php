@@ -339,11 +339,21 @@
                 async loadHadis() {
                     this.loading = true;
                     try {
-                        const response = await fetch('/api/muslim/hadis/random');
+                        const response = await fetch(`/api/muslim/hadis/random?t=${Date.now()}`);
+                        if (!response.ok) throw new Error('API error');
                         const data = await response.json();
-                        this.hadis = data;
+                        if (data && (data.text?.id || data.id)) {
+                            this.hadis = data;
+                        } else {
+                            throw new Error('Invalid data');
+                        }
                     } catch (error) {
                         console.error('Error loading hadis:', error);
+                        this.hadis = {
+                            text: { id: 'Sesungguhnya amal-amal itu tergantung pada niatnya.' },
+                            takhrij: 'HR. Bukhari & Muslim',
+                            grade: 'Shahih'
+                        };
                     }
                     this.loading = false;
                 }
@@ -358,20 +368,23 @@
                     this.loading = true;
                     try {
                         const response = await fetch(`/api/muslim/quran/random?t=${Date.now()}`);
+                        if (!response.ok) throw new Error('API error');
                         const data = await response.json();
-                        if (data) {
+                        if (data && (data.arab || data.teks_arab)) {
                             this.verse = {
-                                arab: data.arab || '',
-                                translation: data.translation || '',
-                                reference: `${data.surah?.name_latin || ''} (${data.surah_number || ''}:${data.ayah_number || ''})`
+                                arab: data.arab || data.teks_arab || '',
+                                translation: data.translation || data.teks_indonesia || '',
+                                reference: `QS. ${data.surah?.name_latin || data.surah || ''}: ${data.ayah_number || data.ayat || ''}`
                             };
+                        } else {
+                            throw new Error('Invalid data');
                         }
                     } catch (error) {
                         console.error('Error loading verse:', error);
                         this.verse = {
                             arab: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
                             translation: 'Dengan nama Allah Yang Maha Pengasih, Maha Penyayang',
-                            reference: 'Al-Fatihah (1:1)'
+                            reference: 'QS. Al-Fatihah: 1'
                         };
                     }
                     this.loading = false;
