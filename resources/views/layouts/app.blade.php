@@ -350,9 +350,10 @@
                     prayer: null,
                     async load() {
                         try {
-                            const cityId = localStorage.getItem('cityId') || '1301';
-                            const tz = localStorage.getItem('timezone') || 'Asia/Jakarta';
-                            const res = await fetch(`/api/prayer/today/${cityId}?tz=${tz}`);
+                            const cityId = '{{ auth()->user()->city_id ?? "" }}';
+                            const tz = '{{ auth()->user()->timezone ?? "Asia/Jakarta" }}';
+                            if (!cityId) return;
+                            const res = await fetch(`/api/muslim/prayer?city_id=${cityId}&tz=${tz}`);
                             const data = await res.json();
                             if (data?.jadwal) {
                                 const now = new Date();
@@ -364,6 +365,7 @@
                                     { name: 'Isya', time: data.jadwal.isya },
                                 ];
                                 for (const p of prayers) {
+                                    if (!p.time) continue;
                                     const [h, m] = p.time.split(':');
                                     const prayerDate = new Date();
                                     prayerDate.setHours(parseInt(h), parseInt(m), 0);
@@ -377,7 +379,7 @@
                                 }
                                 this.prayer = { name: 'Subuh', time: prayers[0].time, remaining: 'Besok' };
                             }
-                        } catch (e) { console.error(e); }
+                        } catch (e) { console.error('Prayer load error:', e); }
                     }
                 };
             }
@@ -387,16 +389,16 @@
                     verse: null,
                     async load() {
                         try {
-                            const res = await fetch('/api/quran/random');
+                            const res = await fetch(`/api/muslim/quran/random?t=${Date.now()}`);
                             const data = await res.json();
                             if (data) {
                                 this.verse = {
-                                    arabic: data.arabic || data.teks_arab,
-                                    translation: data.translation || data.teks_indonesia,
-                                    reference: data.reference || `QS. ${data.surah}: ${data.ayat}`
+                                    arabic: data.arab || data.teks_arab || '',
+                                    translation: data.translation || data.teks_indonesia || '',
+                                    reference: `QS. ${data.surah?.name_latin || data.surah || ''}: ${data.ayah_number || data.ayat || ''}`
                                 };
                             }
-                        } catch (e) { console.error(e); }
+                        } catch (e) { console.error('Verse load error:', e); }
                     }
                 };
             }
@@ -406,15 +408,15 @@
                     hadith: null,
                     async load() {
                         try {
-                            const res = await fetch('/api/hadith/random');
+                            const res = await fetch(`/api/muslim/hadis/random?t=${Date.now()}`);
                             const data = await res.json();
                             if (data) {
                                 this.hadith = {
-                                    translation: data.translation || data.id,
-                                    reference: data.reference || data.judul
+                                    translation: data.text?.id || data.id || '',
+                                    reference: data.takhrij || data.judul || ''
                                 };
                             }
-                        } catch (e) { console.error(e); }
+                        } catch (e) { console.error('Hadith load error:', e); }
                     }
                 };
             }
