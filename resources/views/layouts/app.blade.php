@@ -186,7 +186,7 @@
                             <div class="space-y-4">
                                 {{-- Jadwal Sholat Berikutnya --}}
                                 @auth
-                                    <div x-data="nextPrayer()" x-init="load()" class="glass-card p-4">
+                                    <div x-data="sidebarNextPrayer()" x-init="load()" class="glass-card p-4">
                                         <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center space-x-2">
                                             <svg class="w-4 h-4 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -208,7 +208,7 @@
                                 @endauth
 
                                 {{-- Ayat Hari Ini --}}
-                                <div x-data="dailyVerse()" x-init="load()" class="glass-card p-4">
+                                <div x-data="sidebarDailyVerse()" x-init="load()" class="glass-card p-4">
                                     <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center space-x-2">
                                         <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
@@ -226,7 +226,7 @@
                                 </div>
 
                                 {{-- Hadis Hari Ini --}}
-                                <div x-data="dailyHadith()" x-init="load()" class="glass-card p-4">
+                                <div x-data="sidebarDailyHadith()" x-init="load()" class="glass-card p-4">
                                     <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center space-x-2">
                                         <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
@@ -345,7 +345,7 @@
         {{-- Sidebar Data Scripts --}}
         @auth
         <script>
-            function nextPrayer() {
+            function sidebarNextPrayer() {
                 return {
                     prayer: null,
                     async load() {
@@ -384,7 +384,7 @@
                 };
             }
 
-            function dailyVerse() {
+            function sidebarDailyVerse() {
                 return {
                     verse: null,
                     async load() {
@@ -403,7 +403,7 @@
                 };
             }
 
-            function dailyHadith() {
+            function sidebarDailyHadith() {
                 return {
                     hadith: null,
                     async load() {
