@@ -1,36 +1,36 @@
 <x-app-layout>
-    <div class="px-4 py-6" x-data="surahReader({{ $surahNumber }})" x-init="init()">
+    <div class="max-w-[620px] mx-auto px-4 py-6" x-data="surahReader({{ $surahNumber }})" x-init="init()">
         {{-- Swipe Indicators --}}
         <div x-show="swipeDirection === 'right' && currentSurahNumber > 1" 
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0 -translate-x-4"
              x-transition:enter-end="opacity-100 translate-x-0"
-             class="fixed left-2 top-1/2 -translate-y-1/2 z-50 bg-white/90 backdrop-blur-sm rounded-xl px-3 py-2 shadow-lg border border-gray-200 flex items-center space-x-2">
-            <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+             class="fixed left-2 top-1/2 -translate-y-1/2 z-50 glass-card px-3 py-2 flex items-center space-x-2">
+            <svg class="w-5 h-5 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
             </svg>
-            <span class="text-sm font-medium text-gray-700" x-text="prevSurahName"></span>
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300" x-text="prevSurahName"></span>
         </div>
 
         <div x-show="swipeDirection === 'left' && hasNextSurah" 
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0 translate-x-4"
              x-transition:enter-end="opacity-100 translate-x-0"
-             class="fixed right-2 top-1/2 -translate-y-1/2 z-50 bg-white/90 backdrop-blur-sm rounded-xl px-3 py-2 shadow-lg border border-gray-200 flex items-center space-x-2">
-            <span class="text-sm font-medium text-gray-700" x-text="nextSurahName"></span>
-            <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+             class="fixed right-2 top-1/2 -translate-y-1/2 z-50 glass-card px-3 py-2 flex items-center space-x-2">
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300" x-text="nextSurahName"></span>
+            <svg class="w-5 h-5 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
             </svg>
         </div>
 
         {{-- Progress Bar --}}
-        <div x-show="swipeProgress > 0" class="fixed top-0 left-0 right-0 z-50 h-1 bg-gray-200">
+        <div x-show="swipeProgress > 0" class="fixed top-0 left-0 right-0 z-50 h-1 bg-gray-200 dark:bg-gray-700">
             <div class="h-full bg-teal-500 transition-all duration-100"
                  :style="`width: ${swipeProgress * 100}%`"></div>
         </div>
 
         <div class="mb-4">
-            <a href="{{ route('quran.index') }}" class="inline-flex items-center text-teal-600 hover:text-teal-700">
+            <a href="{{ route('quran.index') }}" class="inline-flex items-center text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 transition">
                 <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                 </svg>
@@ -39,83 +39,83 @@
         </div>
 
         <div x-show="loading" class="text-center py-8">
-            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-teal-600 mx-auto"></div>
-            <p class="text-gray-500 mt-3">Memuat surat...</p>
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-teal-600 dark:border-teal-400 mx-auto"></div>
+            <p class="text-gray-500 dark:text-gray-400 mt-3">Memuat surat...</p>
         </div>
 
         {{-- Surah Header (Swipeable) --}}
-        <div id="surah-header" x-show="!loading && surah" class="bg-gradient-to-br from-teal-600 to-teal-700 rounded-2xl p-5 mb-4 text-white text-center cursor-grab active:cursor-grabbing select-none">
+        <div id="surah-header" x-show="!loading && surah" x-cloak class="glass-card bg-gradient-to-br from-teal-600 to-teal-700 dark:from-teal-700 dark:to-teal-800 p-5 mb-4 text-white text-center cursor-grab active:cursor-grabbing select-none shadow-lg shadow-teal-500/25">
             <p class="text-teal-100 text-sm" x-text="surah?.revelation"></p>
             <h2 class="text-2xl font-bold mt-1" x-text="surah?.name_latin"></h2>
             <p class="text-teal-100" x-text="surah?.translation"></p>
-            <p class="text-3xl mt-3" style="font-family: 'LPMQ IsepMisbah', serif" x-text="surah?.name"></p>
+            <p class="font-arabic text-3xl mt-3" x-text="surah?.name"></p>
             <p class="text-teal-100 text-sm mt-2" x-text="`${surah?.number_of_ayahs} Ayat`"></p>
         </div>
 
         {{-- Pengaturan Tampilan --}}
-        <div x-show="!loading && surah" class="bg-white rounded-xl p-4 mb-4 shadow-sm border border-gray-100">
+        <div x-show="!loading && surah" x-cloak class="glass-card p-4 mb-4">
             <button @click="showSettings = !showSettings" class="flex items-center justify-between w-full">
                 <div class="flex items-center">
-                    <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                     </svg>
-                    <span class="text-sm font-medium text-gray-700">Pengaturan Tampilan</span>
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Pengaturan Tampilan</span>
                 </div>
-                <svg :class="['w-4 h-4 text-gray-400 transition', showSettings ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg :class="['w-4 h-4 text-gray-400 dark:text-gray-500 transition', showSettings ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
             </button>
 
             <div x-show="showSettings" x-collapse class="mt-4 space-y-4">
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-2">Jenis Font Arab</label>
-                    <select x-model="arabicFont" @change="saveSettings()" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Jenis Font Arab</label>
+                    <select x-model="arabicFont" @change="saveSettings()" class="input text-sm">
                         <option value="'LPMQ IsepMisbah', serif">LPMQ IsepMisbah</option>
                         <option value="'Amiri Quran', serif">Amiri Quran</option>
                         <option value="'Amiri', serif">Amiri</option>
                         <option value="'Scheherazade New', serif">Scheherazade New</option>
                         <option value="'Noto Naskh Arabic', serif">Noto Naskh Arabic</option>
                     </select>
-                    <div class="mt-2 bg-gray-50 rounded-lg p-3 text-center overflow-hidden">
-                        <p class="text-xs text-gray-500 mb-1">Preview:</p>
-                        <p class="text-gray-800 leading-relaxed" :style="`font-family: ${arabicFont}; font-size: ${arabicFontSize}%`">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</p>
+                    <div class="mt-2 glass-card p-3 text-center overflow-hidden">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Preview:</p>
+                        <p class="text-gray-800 dark:text-gray-200 leading-relaxed" :style="`font-family: ${arabicFont}; font-size: ${arabicFontSize}%`">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</p>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-2">Ukuran Font Arab: <span x-text="arabicFontSize + '%'"></span></label>
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Ukuran Font Arab: <span x-text="arabicFontSize + '%'"></span></label>
                     <div class="flex items-center space-x-3">
-                        <button @click="arabicFontSize = Math.max(80, arabicFontSize - 10); saveSettings()" class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-200 text-sm font-bold">-</button>
-                        <input type="range" x-model="arabicFontSize" @input="saveSettings()" min="80" max="250" step="10" class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-teal-600">
-                        <button @click="arabicFontSize = Math.min(250, arabicFontSize + 10); saveSettings()" class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-200 text-sm font-bold">+</button>
+                        <button @click="arabicFontSize = Math.max(80, arabicFontSize - 10); saveSettings()" class="w-8 h-8 glass-card flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm font-bold">-</button>
+                        <input type="range" x-model="arabicFontSize" @input="saveSettings()" min="80" max="250" step="10" class="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-teal-600">
+                        <button @click="arabicFontSize = Math.min(250, arabicFontSize + 10); saveSettings()" class="w-8 h-8 glass-card flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm font-bold">+</button>
                     </div>
                 </div>
 
                 <div class="flex items-center justify-between">
-                    <label class="text-xs font-medium text-gray-500">Auto-Scroll Saat Audio</label>
-                    <button @click="autoScroll = !autoScroll; saveSettings()" :class="['relative inline-flex h-6 w-11 items-center rounded-full transition', autoScroll ? 'bg-teal-600' : 'bg-gray-200']">
+                    <label class="text-xs font-medium text-gray-500 dark:text-gray-400">Auto-Scroll Saat Audio</label>
+                    <button @click="autoScroll = !autoScroll; saveSettings()" :class="['relative inline-flex h-6 w-11 items-center rounded-full transition', autoScroll ? 'bg-teal-600' : 'bg-gray-200 dark:bg-gray-700']">
                         <span :class="['inline-block h-4 w-4 transform rounded-full bg-white transition', autoScroll ? 'translate-x-6' : 'translate-x-1']"></span>
                     </button>
                 </div>
 
                 <div class="flex items-center justify-between">
-                    <label class="text-xs font-medium text-gray-500">Tampilkan Huruf Latin</label>
-                    <button @click="showLatin = !showLatin; saveSettings()" :class="['relative inline-flex h-6 w-11 items-center rounded-full transition', showLatin ? 'bg-teal-600' : 'bg-gray-200']">
+                    <label class="text-xs font-medium text-gray-500 dark:text-gray-400">Tampilkan Huruf Latin</label>
+                    <button @click="showLatin = !showLatin; saveSettings()" :class="['relative inline-flex h-6 w-11 items-center rounded-full transition', showLatin ? 'bg-teal-600' : 'bg-gray-200 dark:bg-gray-700']">
                         <span :class="['inline-block h-4 w-4 transform rounded-full bg-white transition', showLatin ? 'translate-x-6' : 'translate-x-1']"></span>
                     </button>
                 </div>
 
                 <div class="flex items-center justify-between">
-                    <label class="text-xs font-medium text-gray-500">Tampilkan Terjemahan</label>
-                    <button @click="showTranslation = !showTranslation; saveSettings()" :class="['relative inline-flex h-6 w-11 items-center rounded-full transition', showTranslation ? 'bg-teal-600' : 'bg-gray-200']">
+                    <label class="text-xs font-medium text-gray-500 dark:text-gray-400">Tampilkan Terjemahan</label>
+                    <button @click="showTranslation = !showTranslation; saveSettings()" :class="['relative inline-flex h-6 w-11 items-center rounded-full transition', showTranslation ? 'bg-teal-600' : 'bg-gray-200 dark:bg-gray-700']">
                         <span :class="['inline-block h-4 w-4 transform rounded-full bg-white transition', showTranslation ? 'translate-x-6' : 'translate-x-1']"></span>
                     </button>
                 </div>
 
                 <div class="flex items-center justify-between">
-                    <label class="text-xs font-medium text-gray-500">Tampilkan Tafsir</label>
-                    <button @click="showTafsir = !showTafsir; saveSettings()" :class="['relative inline-flex h-6 w-11 items-center rounded-full transition', showTafsir ? 'bg-teal-600' : 'bg-gray-200']">
+                    <label class="text-xs font-medium text-gray-500 dark:text-gray-400">Tampilkan Tafsir</label>
+                    <button @click="showTafsir = !showTafsir; saveSettings()" :class="['relative inline-flex h-6 w-11 items-center rounded-full transition', showTafsir ? 'bg-teal-600' : 'bg-gray-200 dark:bg-gray-700']">
                         <span :class="['inline-block h-4 w-4 transform rounded-full bg-white transition', showTafsir ? 'translate-x-6' : 'translate-x-1']"></span>
                     </button>
                 </div>
@@ -123,35 +123,35 @@
         </div>
 
         {{-- Pengaturan Audio --}}
-        <div x-show="!loading && surah" class="bg-white rounded-xl p-4 mb-4 shadow-sm border border-gray-100">
+        <div x-show="!loading && surah" x-cloak class="glass-card p-4 mb-4">
             <button @click="showAudioSettings = !showAudioSettings" class="flex items-center justify-between w-full">
                 <div class="flex items-center">
-                    <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
                     </svg>
-                    <span class="text-sm font-medium text-gray-700">Pengaturan Audio</span>
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Pengaturan Audio</span>
                 </div>
-                <svg :class="['w-4 h-4 text-gray-400 transition', showAudioSettings ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg :class="['w-4 h-4 text-gray-400 dark:text-gray-500 transition', showAudioSettings ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
             </button>
 
             <div x-show="showAudioSettings" x-collapse class="mt-4 space-y-4">
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-3">Mode Audio Murottal</label>
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-3">Mode Audio Murottal</label>
                     <div class="space-y-3">
-                        <label class="flex items-start p-3 rounded-lg border cursor-pointer transition" :class="audioMode === 'normal' ? 'border-teal-500 bg-teal-50' : 'border-gray-200 hover:border-gray-300'">
+                        <label class="flex items-start p-3 rounded-xl border cursor-pointer transition" :class="audioMode === 'normal' ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'">
                             <input type="radio" x-model="audioMode" value="normal" @change="saveSettings()" class="mt-0.5 text-teal-600 focus:ring-teal-500">
                             <div class="ml-3">
-                                <span class="text-sm font-medium text-gray-800">Normal (Full Surat)</span>
-                                <p class="text-xs text-gray-500 mt-0.5">Audio murottal biasa, highlight per ayat (card abu-abu)</p>
+                                <span class="text-sm font-medium text-gray-800 dark:text-gray-200">Normal (Full Surat)</span>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Audio murottal biasa, highlight per ayat</p>
                             </div>
                         </label>
-                        <label class="flex items-start p-3 rounded-lg border cursor-pointer transition" :class="audioMode === 'word-by-word' ? 'border-teal-500 bg-teal-50' : 'border-gray-200 hover:border-gray-300'">
+                        <label class="flex items-start p-3 rounded-xl border cursor-pointer transition" :class="audioMode === 'word-by-word' ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'">
                             <input type="radio" x-model="audioMode" value="word-by-word" @change="saveSettings()" class="mt-0.5 text-teal-600 focus:ring-teal-500">
                             <div class="ml-3">
-                                <span class="text-sm font-medium text-gray-800">Per Kata (Word-by-Word)</span>
-                                <p class="text-xs text-gray-500 mt-0.5">Audio per kata, highlight per kata sinkron dengan bacaan</p>
+                                <span class="text-sm font-medium text-gray-800 dark:text-gray-200">Per Kata (Word-by-Word)</span>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Audio per kata, highlight per kata sinkron dengan bacaan</p>
                             </div>
                         </label>
                     </div>
@@ -160,10 +160,10 @@
         </div>
 
         {{-- Audio Player --}}
-        <div x-show="!loading && surah" class="bg-white rounded-xl p-4 mb-4 shadow-sm border border-gray-100">
+        <div x-show="!loading && surah" x-cloak class="glass-card p-4 mb-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                    <button @click="toggleFullSurah()" class="w-10 h-10 bg-teal-600 rounded-full flex items-center justify-center text-white mr-3">
+                    <button @click="toggleFullSurah()" class="w-10 h-10 bg-teal-600 rounded-full flex items-center justify-center text-white mr-3 hover:bg-teal-700 transition">
                         <template x-if="!isPlayingFull">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                         </template>
@@ -172,43 +172,43 @@
                         </template>
                     </button>
                     <div>
-                        <p class="font-medium text-gray-800">Audio Murottal</p>
-                        <p class="text-sm text-gray-500" x-text="audioMode === 'word-by-word' ? 'Word-by-Word Sync' : 'Normal'"></p>
-                        <p x-show="currentPlayingAyah >= 0" class="text-xs text-amber-600 mt-0.5">
+                        <p class="font-medium text-gray-900 dark:text-white">Audio Murottal</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400" x-text="audioMode === 'word-by-word' ? 'Word-by-Word Sync' : 'Normal'"></p>
+                        <p x-show="currentPlayingAyah >= 0" class="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
                             Sedang memutar: Ayat <span x-text="ayahs[currentPlayingAyah]?.ayah_number"></span>
                         </p>
                     </div>
                 </div>
-                <button @click="stopFullSurah()" x-show="isPlayingFull" class="text-red-500 hover:text-red-700 p-2">
+                <button @click="stopFullSurah()" x-show="isPlayingFull" class="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
                 </button>
             </div>
         </div>
 
         {{-- Ayat (Swipeable) --}}
-        <div id="ayahs-container" x-show="!loading && surah" class="space-y-4 cursor-grab active:cursor-grabbing select-none">
+        <div id="ayahs-container" x-show="!loading && surah" x-cloak class="space-y-4 cursor-grab active:cursor-grabbing select-none">
             <template x-for="(ayah, index) in ayahs" :key="`${currentSurahNumber}-${index}`">
                 <div :id="`ayah-${ayah.ayah_number}`" 
                      :class="[
-                         'rounded-xl p-5 shadow-sm border transition-all duration-500 scroll-mt-24',
+                         'glass-card p-5 transition-all duration-500 scroll-mt-24',
                          currentPlayingAyah === index 
-                             ? 'bg-gray-100 border-gray-200 shadow-md' 
-                             : 'bg-white border-gray-100'
+                             ? 'ring-2 ring-teal-500 dark:ring-teal-400 shadow-md' 
+                             : ''
                      ]">
                     <div class="flex items-center justify-between mb-3">
                         <div class="flex items-center space-x-2">
                             <div :class="[
                                 'w-8 h-8 rounded-full flex items-center justify-center',
-                                currentPlayingAyah === index ? 'bg-amber-200' : 'bg-teal-100'
+                                currentPlayingAyah === index ? 'bg-amber-200 dark:bg-amber-900/30' : 'bg-teal-100 dark:bg-teal-900/30'
                             ]">
                                 <span :class="[
                                     'text-xs font-bold',
-                                    currentPlayingAyah === index ? 'text-amber-700' : 'text-teal-700'
+                                    currentPlayingAyah === index ? 'text-amber-700 dark:text-amber-300' : 'text-teal-700 dark:text-teal-300'
                                 ]" x-text="ayah.ayah_number"></span>
                             </div>
                         </div>
                         <div class="flex items-center space-x-1">
-                            <button @click="playSingleAyah(index)" class="w-9 h-9 rounded-full flex items-center justify-center transition" :class="currentPlayingAyah === index ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-teal-100 hover:text-teal-600'">
+                            <button @click="playSingleAyah(index)" class="w-9 h-9 rounded-full flex items-center justify-center transition" :class="currentPlayingAyah === index ? 'bg-teal-600 text-white' : 'glass-card text-gray-500 dark:text-gray-400 hover:bg-teal-100 dark:hover:bg-teal-900/30 hover:text-teal-600 dark:hover:text-teal-400'">
                                 <template x-if="currentPlayingAyah !== index">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                                 </template>
@@ -216,66 +216,66 @@
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
                                 </template>
                             </button>
-                            <button @click="toggleBookmark(index)" class="w-9 h-9 rounded-full flex items-center justify-center transition" :class="bookmarkedAyahs.includes(index) ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-400 hover:bg-amber-50 hover:text-amber-500'" title="Tandai Ayat">
+                            <button @click="toggleBookmark(index)" class="w-9 h-9 rounded-full flex items-center justify-center transition" :class="bookmarkedAyahs.includes(index) ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400' : 'glass-card text-gray-400 dark:text-gray-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 hover:text-amber-500 dark:hover:text-amber-400'" title="Tandai Ayat">
                                 <svg class="w-4 h-4" :fill="bookmarkedAyahs.includes(index) ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
                                 </svg>
                             </button>
                         </div>
                     </div>
-                    <p class="text-right leading-loose text-gray-800" :style="`font-family: ${arabicFont}; font-size: ${arabicFontSize}%`">
+                    <p class="text-right leading-loose text-gray-900 dark:text-white" :style="`font-family: ${arabicFont}; font-size: ${arabicFontSize}%`">
                         <template x-if="currentPlayingAyah !== index || audioMode === 'normal'">
                             <span x-text="ayah.arab"></span>
                         </template>
                         <template x-if="currentPlayingAyah === index && audioMode === 'word-by-word'">
                             <span>
                                 <template x-for="(word, wIndex) in ayah.arab.split(' ')" :key="wIndex">
-                                    <span :class="wIndex === highlightedWordIndex ? 'bg-yellow-200 rounded px-0.5 transition-colors duration-100' : 'transition-colors duration-100'"
+                                    <span :class="wIndex === highlightedWordIndex ? 'bg-yellow-200 dark:bg-yellow-900/30 rounded px-0.5 transition-colors duration-100' : 'transition-colors duration-100'"
                                           x-text="word + ' '"></span>
                                 </template>
                             </span>
                         </template>
                     </p>
-                    <p x-show="showLatin" class="text-sm text-teal-600 italic mt-2 pl-10" x-text="transliterate(ayah.arab)"></p>
-                    <p x-show="showTranslation" class="text-gray-600 text-sm border-t border-gray-100 mt-3 pt-3" x-text="ayah.translation"></p>
-                    <div x-show="showTafsir && ayah.tafsir?.kemenag?.short" class="mt-3 bg-gray-50 rounded-lg p-3">
-                        <p class="text-xs font-medium text-gray-500 mb-1">Tafsir Kemenag:</p>
-                        <p class="text-sm text-gray-700" x-text="ayah.tafsir?.kemenag?.short || ''"></p>
+                    <p x-show="showLatin" class="text-sm text-teal-600 dark:text-teal-400 italic mt-2 pl-10" x-text="transliterate(ayah.arab)"></p>
+                    <p x-show="showTranslation" class="text-gray-600 dark:text-gray-400 text-sm border-t border-gray-100 dark:border-gray-800 mt-3 pt-3" x-text="ayah.translation"></p>
+                    <div x-show="showTafsir && ayah.tafsir?.kemenag?.short" class="mt-3 glass-card p-3">
+                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Tafsir Kemenag:</p>
+                        <p class="text-sm text-gray-700 dark:text-gray-300" x-text="ayah.tafsir?.kemenag?.short || ''"></p>
                     </div>
                 </div>
             </template>
         </div>
 
         {{-- Surah Navigation (Outside swipeable area) --}}
-        <div x-show="!loading && surah && !loadingNext" class="py-4">
-            <div class="flex items-center justify-between bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div x-show="!loading && surah && !loadingNext" x-cloak class="py-4">
+            <div class="glass-card overflow-hidden">
                 {{-- Previous Surah --}}
                 <a x-show="currentSurahNumber > 1" 
                    :href="`/quran/${currentSurahNumber - 1}`"
-                   class="flex items-center px-4 py-3 hover:bg-gray-50 transition flex-1">
+                   class="flex items-center px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition flex-1">
                     <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                     </svg>
                     <div class="text-left">
-                        <p class="text-xs text-gray-400">Sebelumnya</p>
-                        <p class="text-sm font-medium text-gray-700 truncate" x-text="prevSurahName"></p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500">Sebelumnya</p>
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300 truncate" x-text="prevSurahName"></p>
                     </div>
                 </a>
                 <div x-show="currentSurahNumber <= 1" class="flex-1"></div>
 
                 {{-- Center Info --}}
-                <div class="px-3 py-3 text-center border-x border-gray-100">
-                    <p class="text-xs text-gray-400">Surat</p>
-                    <p class="text-sm font-bold text-teal-600" x-text="currentSurahNumber"></p>
+                <div class="px-3 py-3 text-center border-x border-gray-100 dark:border-gray-800">
+                    <p class="text-xs text-gray-400 dark:text-gray-500">Surat</p>
+                    <p class="text-sm font-bold text-teal-600 dark:text-teal-400" x-text="currentSurahNumber"></p>
                 </div>
 
                 {{-- Next Surah --}}
                 <a x-show="hasNextSurah" 
                    :href="`/quran/${currentSurahNumber + 1}`"
-                   class="flex items-center px-4 py-3 hover:bg-gray-50 transition flex-1 justify-end">
+                   class="flex items-center px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition flex-1 justify-end">
                     <div class="text-right">
-                        <p class="text-xs text-gray-400">Selanjutnya</p>
-                        <p class="text-sm font-medium text-gray-700 truncate" x-text="nextSurahName"></p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500">Selanjutnya</p>
+                        <p class="text-sm font-medium text-gray-700 dark:text-gray-300 truncate" x-text="nextSurahName"></p>
                     </div>
                     <svg class="w-5 h-5 text-gray-400 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
@@ -286,19 +286,19 @@
         </div>
 
         {{-- Loading Next Surah --}}
-        <div x-show="loadingNext" class="text-center py-8">
-            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-teal-600 mx-auto"></div>
-            <p class="text-gray-500 mt-3">Memuat surat berikutnya...</p>
+        <div x-show="loadingNext" x-cloak class="text-center py-8">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-teal-600 dark:border-teal-400 mx-auto"></div>
+            <p class="text-gray-500 dark:text-gray-400 mt-3">Memuat surat berikutnya...</p>
         </div>
 
         {{-- End of Quran --}}
-        <div x-show="!hasNextSurah && !loading" class="bg-gradient-to-b from-teal-50 to-teal-100 rounded-2xl p-6 text-center border border-teal-200">
-            <svg class="w-12 h-12 text-teal-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div x-show="!hasNextSurah && !loading" x-cloak class="glass-card bg-gradient-to-b from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 p-6 text-center border border-teal-200 dark:border-teal-800">
+            <svg class="w-12 h-12 text-teal-600 dark:text-teal-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            <p class="text-teal-800 font-bold text-lg">Alhamdulillah</p>
-            <p class="text-teal-600 mt-1">Anda telah menyelesaikan Al-Quran</p>
-            <a href="{{ route('quran.index') }}" class="inline-block mt-4 bg-teal-600 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-teal-700 transition">
+            <p class="text-teal-800 dark:text-teal-200 font-bold text-lg">Alhamdulillah</p>
+            <p class="text-teal-600 dark:text-teal-400 mt-1">Anda telah menyelesaikan Al-Quran</p>
+            <a href="{{ route('quran.index') }}" class="inline-block mt-4 btn-primary text-sm">
                 Kembali ke Daftar Surat
             </a>
         </div>
@@ -925,7 +925,6 @@
                     this.isPlayingFull = true;
                     this.stopRequested = false;
 
-                    // Preload first ayah
                     let nextAudioPromise = this.preloadAudio(this.ayahs[0]?.audio_url);
 
                     for (let i = 0; i < this.ayahs.length; i++) {
@@ -938,15 +937,12 @@
                             this.scrollToAyah(this.ayahs[i].ayah_number);
                         }
 
-                        // Wait for current audio to be ready
                         const currentAudio = await nextAudioPromise;
 
-                        // Preload next ayah while current is playing
                         if (i < this.ayahs.length - 1) {
                             nextAudioPromise = this.preloadAudio(this.ayahs[i + 1]?.audio_url);
                         }
 
-                        // Play current ayah
                         if (currentAudio) {
                             this.currentAudio = currentAudio;
                             await this.playPreloadedAudio(currentAudio);

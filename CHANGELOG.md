@@ -2,6 +2,126 @@
 
 All notable changes to NgaOS - Islamic Web App will be documented in this file.
 
+## [2.0.0] - 2026-07-20
+
+### 🎨 UI/UX Redesign
+
+#### Glassmorphism Design System
+- **Glass Cards** - Semi-transparent cards with backdrop blur effect
+- **Glass Navigation** - Frosted glass header and bottom navigation
+- **Glass Sidebar** - Desktop sidebar with glassmorphism effect
+- **Glass Modals** - Modal dialogs with backdrop blur overlay
+- **Glass Inputs** - Semi-transparent input fields with blur effect
+
+#### Dark Mode Support
+- **Manual Toggle** - Dark mode toggle in header/sidebar
+- **Persistent Preference** - Saves dark mode choice to localStorage
+- **Full Coverage** - All pages and components support dark mode
+- **Color System** - Proper dark mode color palette for all elements
+
+#### Threads.com-Inspired Layout
+- **Centered Content** - max-w-[620px] centered feed layout
+- **Desktop Sidebar** - Icon+label sidebar (w-64) on lg+ screens
+- **Right Sidebar** - Ayat/Hadis Hari Ini, Jadwal Sholat, Profile Summary, Quick Links
+- **Mobile Bottom Nav** - Glassmorphism bottom navigation
+- **FAB Button** - Floating compose button on Forum page
+
+#### Modern Abstract Logo
+- **New Logo** - Abstract geometric shape with Islamic undertone
+- **Gradient Colors** - Teal gradient with shadow effect
+- **Consistent Usage** - Logo in header, sidebar, guest layout, PWA manifest
+
+#### Animations & Transitions
+- **Fade In** - Smooth fade-in animation for page content
+- **Slide Up** - Slide-up animation for cards and sections
+- **Scale In** - Scale-in animation for interactive elements
+- **Hover Effects** - Scale transform on quick action icons
+- **Active States** - Scale-down effect on button press
+
+#### Component Updates
+- **Primary Button** - Teal gradient with rounded-xl
+- **Secondary Button** - Glass card style
+- **Danger Button** - Red glass card style
+- **Input Fields** - Glass input with backdrop blur
+- **Badges** - Color-coded badges (teal, amber, red, green)
+- **Cards** - Glass cards with rounded-2xl corners
+
+### 📱 Responsive Design
+
+#### Mobile (< 1024px)
+- Single column centered layout
+- Fixed bottom navigation with glass effect
+- Sticky glass header with dark mode toggle
+- Touch-friendly interactions
+
+#### Desktop (≥ 1024px)
+- Three-column layout: Sidebar | Feed | Right Panel
+- Left sidebar with icon+label navigation
+- Center feed with max-w-[620px]
+- Right sidebar with quick info
+
+### 🔧 Technical Changes
+
+#### Tailwind Configuration
+- Add `darkMode: 'class'` for manual dark mode toggle
+- Add glassmorphism colors (glass-light, glass-dark, glass-border)
+- Add surface colors (surface-light, surface-dark)
+- Add custom animations (fade-in, slide-up, slide-down, scale-in)
+- Add backdrop-blur-xs utility
+
+#### CSS Utilities
+- Add `.glass` - Base glassmorphism effect
+- Add `.glass-card` - Glass card with rounded corners
+- Add `.glass-header` - Glass header effect
+- Add `.glass-nav` - Glass navigation effect
+- Add `.glass-sidebar` - Glass sidebar effect
+- Add `.glass-input` - Glass input effect
+- Add `.glass-modal` - Glass modal effect
+- Add `.btn-primary` - Primary button style
+- Add `.btn-secondary` - Secondary button style
+- Add `.btn-danger` - Danger button style
+- Add `.card` - Default card style
+- Add `.card-hover` - Card with hover effect
+- Add `.input` - Default input style
+- Add `.badge` - Badge base style
+- Add `.badge-teal`, `.badge-amber`, `.badge-red`, `.badge-green` - Color variants
+
+### 📁 Files Modified
+
+#### Core Files (4)
+- `tailwind.config.js` - Glassmorphism config, dark mode, animations
+- `resources/css/app.css` - Glass utilities, dark mode variables
+- `resources/views/layouts/app.blade.php` - Complete rewrite
+- `resources/views/layouts/guest.blade.php` - Glass card design
+
+#### Main Pages (5)
+- `resources/views/home.blade.php` - Centered layout, glass cards
+- `resources/views/quran/index.blade.php` - Glass surah list
+- `resources/views/quran/surah.blade.php` - Glass ayah cards
+- `resources/views/prayer/index.blade.php` - Glass prayer widget
+- `resources/views/forum/index.blade.php` - Glass posts, FAB button
+
+#### Secondary Pages (8)
+- `resources/views/hadith/index.blade.php` - Glass collection cards
+- `resources/views/chatbot/index.blade.php` - Glass chat container
+- `resources/views/qibla/index.blade.php` - Glass compass card
+- `resources/views/profile/edit.blade.php` - Glass profile card
+- `resources/views/auth/login.blade.php` - Glass login card
+- `resources/views/auth/forgot-password.blade.php` - Glass OTP card
+
+#### Components (9)
+- `resources/views/components/primary-button.blade.php` - Teal gradient
+- `resources/views/components/secondary-button.blade.php` - Glass style
+- `resources/views/components/danger-button.blade.php` - Red glass
+- `resources/views/components/text-input.blade.php` - Glass input
+- `resources/views/components/modal.blade.php` - Glass modal
+- `resources/views/components/input-label.blade.php` - Dark mode
+- `resources/views/components/input-error.blade.php` - Dark mode
+- `resources/views/components/application-logo.blade.php` - New logo
+- `resources/views/components/nav-link.blade.php` - Dark mode
+
+---
+
 ## [1.0.3] - 2026-07-19
 
 ### 🐛 Bug Fixes

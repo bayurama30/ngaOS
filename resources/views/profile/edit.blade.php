@@ -1,61 +1,61 @@
 <x-app-layout>
-    <div class="px-4 py-6" x-data="profileSettings()">
-        <div class="mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Profil</h2>
-            <p class="text-gray-600 mt-1">Pengaturan akun Anda</p>
+    <div class="max-w-[620px] mx-auto px-4 py-6" x-data="profileSettings()">
+        <div class="mb-6 animate-fade-in">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Profil</h2>
+            <p class="text-gray-600 dark:text-gray-400 mt-1">Pengaturan akun Anda</p>
         </div>
 
         <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @method('PATCH')
 
-            <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+            <div class="glass-card p-5 animate-slide-up">
                 <div class="flex items-center mb-4">
-                    <div class="w-20 h-20 bg-teal-100 rounded-full flex items-center justify-center mr-4 overflow-hidden">
+                    <div class="w-20 h-20 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center mr-4 overflow-hidden">
                         @if($user->avatar)
                             <img src="{{ Storage::url($user->avatar) }}" alt="" class="w-full h-full object-cover">
                         @else
-                            <span class="text-teal-600 font-bold text-2xl">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
+                            <span class="text-white font-bold text-2xl">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
                         @endif
                     </div>
                     <div>
-                        <h3 class="font-semibold text-gray-800">{{ $user->name }}</h3>
-                        <p class="text-sm text-gray-500">{{ $user->email }}</p>
+                        <h3 class="font-semibold text-gray-900 dark:text-white">{{ $user->name }}</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">{{ $user->email }}</p>
                     </div>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Foto Profil</label>
-                    <input type="file" name="avatar" accept="image/*" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Foto Profil</label>
+                    <input type="file" name="avatar" accept="image/*" class="input text-sm">
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 space-y-4">
-                <h3 class="font-semibold text-gray-800">Informasi Dasar</h3>
+            <div class="glass-card p-5 space-y-4 animate-slide-up">
+                <h3 class="font-semibold text-gray-900 dark:text-white">Informasi Dasar</h3>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama</label>
-                    <input type="text" name="name" value="{{ $user->name }}" required class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama</label>
+                    <input type="text" name="name" value="{{ $user->name }}" required class="input">
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 space-y-4">
+            <div class="glass-card p-5 space-y-4 animate-slide-up">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h3 class="font-semibold text-gray-800">Lokasi</h3>
-                        <p class="text-sm text-gray-500">Untuk jadwal sholat yang akurat</p>
+                        <h3 class="font-semibold text-gray-900 dark:text-white">Lokasi</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Untuk jadwal sholat yang akurat</p>
                     </div>
-                    <button type="button" @click="detectLocation()" :disabled="detecting" class="flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-teal-700 transition disabled:opacity-50">
+                    <button type="button" @click="detectLocation()" :disabled="detecting" class="btn-primary flex items-center gap-2 text-sm disabled:opacity-50">
                         <svg x-show="!detecting" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                         </svg>
-                        <svg x-show="detecting" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg x-show="detecting" x-cloak class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                         </svg>
                         <span x-text="detecting ? 'Mendeteksi...' : 'Deteksi Lokasi'"></span>
                     </button>
                 </div>
 
-                <div x-show="detectStatus" :class="detectStatusType === 'success' ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700'" class="border rounded-lg p-3 text-sm" x-text="detectStatus"></div>
+                <div x-show="detectStatus" x-cloak :class="detectStatusType === 'success' ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300' : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300'" class="border rounded-xl p-3 text-sm" x-text="detectStatus"></div>
 
                 <input type="hidden" name="location_lat" :value="lat">
                 <input type="hidden" name="location_lng" :value="lng">
@@ -63,13 +63,13 @@
                 <input type="hidden" name="city" :value="selectedCityName">
                 <input type="hidden" name="timezone" :value="detectedTimezone">
 
-                <div x-show="selectedCityName" class="bg-teal-50 rounded-xl p-4">
+                <div x-show="selectedCityName" x-cloak class="glass-card bg-teal-50 dark:bg-teal-900/20 p-4 border border-teal-200 dark:border-teal-800">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="font-semibold text-teal-800" x-text="selectedCityName"></p>
-                            <p class="text-sm text-teal-600" x-text="'Zona Waktu: ' + detectedTimezone"></p>
+                            <p class="font-semibold text-teal-800 dark:text-teal-200" x-text="selectedCityName"></p>
+                            <p class="text-sm text-teal-600 dark:text-teal-400" x-text="'Zona Waktu: ' + detectedTimezone"></p>
                         </div>
-                        <button type="button" @click="clearLocation()" class="text-red-500 hover:text-red-700 p-1">
+                        <button type="button" @click="clearLocation()" class="text-red-500 hover:text-red-700 p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
@@ -77,23 +77,23 @@
                     </div>
                 </div>
 
-                <div x-show="!selectedCityName && !detecting" class="bg-gray-50 rounded-xl p-4 text-center">
-                    <svg class="w-12 h-12 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div x-show="!selectedCityName && !detecting" x-cloak class="glass-card p-4 text-center">
+                    <svg class="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                     </svg>
-                    <p class="text-gray-500 text-sm">Klik "Deteksi Lokasi" untuk mengatur lokasi otomatis</p>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm">Klik "Deteksi Lokasi" untuk mengatur lokasi otomatis</p>
                 </div>
 
                 <div>
-                    <p class="text-xs text-gray-400">Atau cari kota manual:</p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500">Atau cari kota manual:</p>
                     <div class="relative mt-1">
-                        <input type="text" x-model="citySearch" @input.debounce.500ms="searchCity()" placeholder="Cari kota/kabupaten..." class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm">
+                        <input type="text" x-model="citySearch" @input.debounce.500ms="searchCity()" placeholder="Cari kota/kabupaten..." class="input text-sm">
                         
-                        <div x-show="searchResults.length > 0" class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                        <div x-show="searchResults.length > 0" x-cloak class="absolute z-10 w-full mt-1 glass-modal max-h-60 overflow-y-auto">
                             <template x-for="city in searchResults" :key="city.id">
-                                <button type="button" @click="selectCity(city)" class="w-full text-left px-4 py-3 hover:bg-teal-50 border-b border-gray-100 last:border-0">
-                                    <p class="font-medium text-gray-800 text-sm" x-text="city.lokasi"></p>
+                                <button type="button" @click="selectCity(city)" class="w-full text-left px-4 py-3 hover:bg-teal-50 dark:hover:bg-teal-900/20 border-b border-gray-100 dark:border-gray-800 last:border-0 transition">
+                                    <p class="font-medium text-gray-800 dark:text-gray-200 text-sm" x-text="city.lokasi"></p>
                                 </button>
                             </template>
                         </div>
@@ -101,7 +101,7 @@
                 </div>
             </div>
 
-            <button type="submit" class="w-full bg-teal-600 text-white py-3 rounded-xl font-medium hover:bg-teal-700 transition">
+            <button type="submit" class="w-full btn-primary py-3">
                 Simpan Perubahan
             </button>
         </form>
@@ -109,7 +109,7 @@
         <div class="mt-6">
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" class="w-full bg-red-50 text-red-600 py-3 rounded-xl font-medium hover:bg-red-100 transition">
+                <button type="submit" class="w-full btn-danger py-3">
                     Keluar
                 </button>
             </form>
