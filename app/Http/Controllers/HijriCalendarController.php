@@ -327,24 +327,14 @@ class HijriCalendarController extends Controller
     private function jdToIslamic(float $jd): array
     {
         $jd = floor($jd) + 0.5;
-        $y = 10631.0 / 30.0;
-        $epoch = 1948439.5;
-        $shift = 8.01 / 60.0;
-
-        $z = $jd - $epoch + $shift;
-        $cycles = floor($z / 10631.0);
-        $z -= 10631.0 * $cycles;
-        $z -= 0.5;
-        $j = floor(($z - 1) / $y);
-        $z -= $j * $y;
-        $day = $z + 1;
-        $month = floor(($j + 2) / 30.0) + 1;
-        $year = 30 * $cycles + $j;
-
-        if ($month > 12) {
-            $month -= 12;
-            $year += 1;
-        }
+        $l = floor($jd) - 1948440 + 10632;
+        $n = floor(($l - 1) / 10631);
+        $l = $l - 10631 * $n + 354;
+        $j = floor((10985 - $l) / 5316) * floor((50 * $l) / 17719) + floor($l / 5670) * floor((43 * $l) / 15238);
+        $l = $l - floor((30 - $j) / 15) * floor((17719 * $j) / 50) - floor($j / 16) * floor((15238 * $j) / 43) + 29;
+        $month = floor((24 * $l) / 709);
+        $day = $l - floor((709 * $month) / 24);
+        $year = 30 * $n + $j - 30;
 
         return [
             'day' => (int) $day,
@@ -355,16 +345,7 @@ class HijriCalendarController extends Controller
 
     private function islamicToJD(int $month, int $day, int $year): float
     {
-        $y = 10631.0 / 30.0;
-        $epoch = 1948439.5;
-        $shift = 8.01 / 60.0;
-
-        $cycle = floor($year / 30);
-        $cyear = $year - 30 * $cycle;
-        $jd = floor($y * $cyear) + floor(($month - 1) * 30.0) + $day + $epoch - $shift;
-        $jd += 10631.0 * $cycle;
-
-        return $jd - 0.5;
+        return floor((11 * $year + 3) / 30) + 354 * $year + 30 * $month - floor(($month - 1) / 2) + $day + 1948440 - 385;
     }
 
     private function jdToGregorian(float $jd): array
