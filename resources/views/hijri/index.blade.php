@@ -25,12 +25,18 @@
 
         {{-- Calendar Tab --}}
         <div x-show="activeTab === 'calendar'" x-cloak>
-            {{-- Calendar Type Toggle --}}
+            {{-- Calendar Type Toggle + Today Button --}}
             <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center space-x-2">
                     <button @click="calendarType = 'masehi'; loadCalendar()" :class="['px-3 py-1.5 rounded-lg text-sm font-medium transition', calendarType === 'masehi' ? 'bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800']">Masehi</button>
                     <button @click="calendarType = 'hijri'; loadCalendar()" :class="['px-3 py-1.5 rounded-lg text-sm font-medium transition', calendarType === 'hijri' ? 'bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800']">Hijriah</button>
                 </div>
+                <button @click="goToToday()" class="px-3 py-1.5 rounded-lg text-sm font-medium text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition flex items-center space-x-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <span>Hari Ini</span>
+                </button>
             </div>
 
             {{-- Month Navigation --}}
@@ -295,6 +301,31 @@
                         }
                     }
                     this.loadCalendar();
+                },
+
+                goToToday() {
+                    const now = new Date();
+                    if (this.calendarType === 'hijri') {
+                        // For Hijri view, we need to find which Hijri month contains today
+                        // Load Masehi calendar for current month to get today's Hijri date
+                        fetch(`/api/hijri/calendar?month=${now.getMonth() + 1}&year=${now.getFullYear()}&type=masehi`)
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data?.success && data.days) {
+                                    const todayData = data.days.find(d => d.is_today);
+                                    if (todayData) {
+                                        this.currentHijriMonth = todayData.hijri_month;
+                                        this.currentHijriYear = todayData.hijri_year;
+                                        this.calendarType = 'hijri';
+                                        this.loadCalendar();
+                                    }
+                                }
+                            });
+                    } else {
+                        this.currentMonth = now.getMonth() + 1;
+                        this.currentYear = now.getFullYear();
+                        this.loadCalendar();
+                    }
                 },
 
                 async doConvert() {
