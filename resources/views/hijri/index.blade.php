@@ -68,14 +68,18 @@
                 {{-- Day cells --}}
                 <template x-for="(day, index) in calendarDays" :key="index">
                     <div :class="[
-                        'p-2 rounded-xl text-center cursor-pointer transition-all duration-200',
+                        'p-2 rounded-xl text-center cursor-pointer transition-all duration-200 relative',
                         day.is_today ? 'bg-teal-600 text-white shadow-md shadow-teal-500/25' : 
-                        day.is_ramadhan ? 'bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30' :
+                        day.is_ramadhan ? 'bg-gradient-to-b from-amber-100 to-amber-50 dark:from-amber-900/40 dark:to-amber-900/20 border border-amber-200 dark:border-amber-700/50 hover:from-amber-200 hover:to-amber-100 dark:hover:from-amber-900/50 dark:hover:to-amber-900/30' :
                         day.is_friday ? 'bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30' :
                         'hover:bg-gray-100 dark:hover:bg-gray-800'
                     ]">
-                        <p :class="['text-sm font-medium', day.is_today ? 'text-white' : 'text-gray-900 dark:text-white']" x-text="day.day"></p>
-                        <p :class="['text-xs', day.is_today ? 'text-teal-100' : 'text-gray-400 dark:text-gray-500']" x-text="calendarType === 'masehi' ? day.hijri_day : day.gregorian_day"></p>
+                        <p :class="['text-sm font-medium', day.is_today ? 'text-white' : day.is_ramadhan ? 'text-amber-800 dark:text-amber-200' : 'text-gray-900 dark:text-white']" x-text="day.day"></p>
+                        <p :class="['text-xs', day.is_today ? 'text-teal-100' : day.is_ramadhan ? 'text-amber-600 dark:text-amber-400 font-medium' : 'text-gray-400 dark:text-gray-500']" x-text="calendarType === 'masehi' ? day.hijri_day : day.gregorian_day"></p>
+                        {{-- Ramadhan moon icon --}}
+                        <div x-show="day.is_ramadhan && !day.is_today" class="absolute -top-1 -right-1 w-4 h-4 flex items-center justify-center">
+                            <span class="text-xs">🌙</span>
+                        </div>
                     </div>
                 </template>
             </div>
@@ -93,8 +97,8 @@
                     <span>Hari ini</span>
                 </div>
                 <div class="flex items-center space-x-1">
-                    <div class="w-3 h-3 bg-amber-200 dark:bg-amber-800 rounded-full"></div>
-                    <span>Ramadhan</span>
+                    <div class="w-3 h-3 bg-gradient-to-b from-amber-100 to-amber-50 border border-amber-200 rounded-full"></div>
+                    <span>Ramadhan 🌙</span>
                 </div>
                 <div class="flex items-center space-x-1">
                     <div class="w-3 h-3 bg-green-200 dark:bg-green-800 rounded-full"></div>
