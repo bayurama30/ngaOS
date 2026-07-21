@@ -2,6 +2,64 @@
 
 All notable changes to NgaOS - Islamic Web App will be documented in this file.
 
+## [2.1.0] - 2026-07-21
+
+### ✨ New Features
+
+#### Kalender Hijriah
+- **Interactive Calendar** - Toggle between Masehi and Hijriah views
+- **Month Navigation** - Previous/Next month buttons
+- **Today Indicator** - Highlight current day in teal
+- **Ramadhan Highlighting** - Amber gradient background with moon icon (🌙) for Ramadhan days
+- **Friday Highlighting** - Green background for Jumat
+- **Date Conversion** - Masehi ↔ Hijriah conversion (Julian Day algorithm)
+- **Islamic Holidays** - 10 hari besar Islam (Tahun Baru Islam, Isra Mi'raj, Ramadhan, Idul Fitri, Idul Adha, dll)
+- **"Hari Ini" Button** - Quick jump to today's date in calendar
+
+#### Home Page
+- **Swipeable Quick Actions** - Horizontal scroll grid like iPhone launcher
+- **Kalender Menu** - Added to page 2 of quick actions grid
+- **Dot Indicator** - Shows current page below grid
+
+### 🐛 Bug Fixes
+
+#### AI Chatbot Sidebar
+- Fix dailyVerse function conflict (rename to sidebarDailyVerse)
+- Fix dailyHadith function conflict (rename to sidebarDailyHadith)
+- Fix nextPrayer function conflict (rename to sidebarNextPrayer)
+- Fixes Ayat/Hadis not showing when logged in
+
+#### Home Page
+- Add fallback for Ayat/Hadis when API fails
+- Add response.ok check before parsing JSON
+- Add data validation for API responses
+
+### 📱 Navigation Updates
+
+#### Mobile Bottom Nav
+- Removed Hadist tab (5 tabs: Home, Quran, Solat, Forum, AI)
+
+#### Desktop Sidebar
+- Added "Kalender" between Kiblat and Forum
+
+### 📁 Files Added
+
+| File | Description |
+|------|-------------|
+| `app/Http/Controllers/HijriCalendarController.php` | Controller with calendar, conversion, holidays |
+| `resources/views/hijri/index.blade.php` | Interactive Hijri calendar view |
+
+### 📁 Files Modified
+
+| File | Changes |
+|------|---------|
+| `resources/views/home.blade.php` | Swipeable grid, Kalender menu |
+| `resources/views/layouts/app.blade.php` | Navigation updates, sidebar function renames |
+| `routes/web.php` | Added /hijri route |
+| `routes/api.php` | Added /api/hijri/* endpoints |
+
+---
+
 ## [2.0.0] - 2026-07-20
 
 ### 🎨 UI/UX Redesign
