@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ChatbotController;
+use App\Http\Controllers\HijriCalendarController;
 use App\Http\Controllers\MuslimController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,6 +16,12 @@ Route::get('/muslim/city/all', [MuslimController::class, 'allCities']);
 Route::get('/muslim/prayer', [MuslimController::class, 'prayerSchedule']);
 Route::get('/muslim/qibla', [MuslimController::class, 'qiblaDirection']);
 Route::get('/muslim/hijri/today', [MuslimController::class, 'todayHijri']);
+
+// Hijri Calendar API
+Route::get('/hijri/today', [HijriCalendarController::class, 'today']);
+Route::get('/hijri/holidays', [HijriCalendarController::class, 'holidays']);
+Route::get('/hijri/convert', [HijriCalendarController::class, 'convert']);
+Route::get('/hijri/calendar', [HijriCalendarController::class, 'calendarMonth']);
 Route::get('/muslim/hadis/random', [MuslimController::class, 'randomHadis']);
 Route::get('/muslim/hadis/mukharrij/{key}', [MuslimController::class, 'hadisByMukharrij']);
 Route::get('/muslim/hadis/explore', [MuslimController::class, 'exploreHadis']);

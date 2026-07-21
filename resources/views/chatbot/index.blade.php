@@ -8,8 +8,8 @@
         .chat-content br + br { display: block; content: ""; margin-top: 4px; }
     </style>
 
-    <div class="max-w-[620px] mx-auto px-4 py-6 flex flex-col h-[calc(100vh-180px)]" x-data="chatbot()" x-cloak>
-        <div class="flex items-center justify-between mb-4 animate-fade-in">
+    <div class="max-w-[620px] mx-auto flex flex-col h-[calc(100vh-64px)] lg:h-[calc(100vh-32px)]" x-data="chatbot()" x-cloak>
+        <div class="flex items-center justify-between px-4 pt-4 pb-2 animate-fade-in">
             <div>
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">AI Chatbot</h2>
                 <p class="text-gray-600 dark:text-gray-400 mt-1">Tanya seputar Islam</p>
@@ -24,11 +24,11 @@
             </div>
         </div>
 
-        <div x-show="remaining <= 0" x-cloak class="glass-card p-4 mb-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+        <div x-show="remaining <= 0" x-cloak class="glass-card p-4 mx-4 mb-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
             <p class="text-amber-700 dark:text-amber-300 text-sm text-center">Anda telah mencapai batas chat hari ini. Silakan coba lagi besok.</p>
         </div>
 
-        <div class="flex-1 overflow-y-auto mb-4 space-y-4 scrollbar-hide" x-ref="chatContainer">
+        <div class="flex-1 overflow-y-auto px-4 py-2 space-y-4 scrollbar-hide" x-ref="chatContainer">
             <div class="flex justify-center" x-show="chats.length === 0 && !loading">
                 <div class="glass-card px-4 py-2 text-sm text-teal-700 dark:text-teal-300">
                     Assalamu'alaikum! Ada yang bisa saya bantu?
@@ -61,7 +61,7 @@
             </div>
         </div>
 
-        <div x-show="chats.length === 0 && !loading" x-cloak class="mb-4">
+        <div x-show="chats.length === 0 && !loading" x-cloak class="px-4 mb-4">
             <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Pertanyaan cepat:</p>
             <div class="flex flex-wrap gap-2">
                 <button @click="sendQuick('Tata cara wudhu')" class="glass-card px-3 py-1.5 rounded-full text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition">Wudhu</button>
@@ -73,13 +73,13 @@
             </div>
         </div>
 
-        <div class="glass-card border-t border-gray-200 dark:border-gray-700 -mx-4 px-4 py-3 rounded-t-none">
+        <div class="glass-card border-t border-gray-200 dark:border-gray-700 px-4 py-3 safe-bottom">
             <div x-show="error" x-cloak class="glass-card p-3 mb-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
                 <p class="text-red-600 dark:text-red-400 text-sm" x-text="error"></p>
             </div>
             <form @submit.prevent="sendMessage()" class="flex space-x-2">
                 <div class="flex-1 relative">
-                    <input type="text" x-model="message" :disabled="loading || remaining <= 0" @keydown.enter.prevent="sendMessage()" placeholder="Tanya sesuatu..." maxlength="500" class="input pr-16 disabled:opacity-50">
+                    <input type="text" x-model="message" :disabled="loading || remaining <= 0" @keydown.enter.prevent="sendMessage()" placeholder="Tanya sesuatu..." maxlength="500" class="input pr-16 disabled:opacity-50 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500">
                     <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs" :class="message.length > 450 ? 'text-red-500' : 'text-gray-400 dark:text-gray-500'" x-text="`${message.length}/500`"></span>
                 </div>
                 <button type="submit" :disabled="!message.trim() || loading || remaining <= 0" class="btn-primary px-4 disabled:opacity-50">

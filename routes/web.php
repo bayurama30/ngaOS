@@ -3,6 +3,7 @@
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\HadithController;
+use App\Http\Controllers\HijriCalendarController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PrayerTimeController;
 use App\Http\Controllers\ProfileController;
@@ -32,6 +33,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Qibla Routes
     Route::get('/qibla', [QiblaController::class, 'index'])->name('qibla.index');
+
+    // Hijri Calendar Routes
+    Route::get('/hijri', [HijriCalendarController::class, 'index'])->name('hijri.index');
 
     // Forum Routes
     Route::get('/forum', [ForumController::class, 'index'])->name('forum.index');
