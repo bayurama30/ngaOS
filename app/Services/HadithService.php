@@ -99,14 +99,15 @@ class HadithService
 
         $allHadis = [];
         $keywords = $mukharrij['keywords'];
+        $maxPages = 200; // Increase from 50 to 200 to fetch more hadiths
 
-        for ($p = 1; $p <= 50; $p++) {
+        for ($p = 1; $p <= $maxPages; $p++) {
             $response = $this->api->get('/hadis/enc/explore', [
                 'page' => $p,
-                'limit' => 10,
+                'limit' => 50, // Increase from 10 to 50 per page
             ]);
 
-            if (!$response || !isset($response['hadis'])) {
+            if (!$response || !isset($response['hadis']) || empty($response['hadis'])) {
                 break;
             }
 
@@ -121,7 +122,8 @@ class HadithService
                 }
             }
 
-            if (!$response['paging']['has_next']) {
+            // Check if there are more pages
+            if (!isset($response['paging']['has_next']) || !$response['paging']['has_next']) {
                 break;
             }
         }
@@ -163,13 +165,15 @@ class HadithService
             $counts[$key] = 0;
         }
 
-        for ($p = 1; $p <= 50; $p++) {
+        $maxPages = 200; // Increase from 50 to 200
+
+        for ($p = 1; $p <= $maxPages; $p++) {
             $response = $this->api->get('/hadis/enc/explore', [
                 'page' => $p,
-                'limit' => 10,
+                'limit' => 50, // Increase from 10 to 50
             ]);
 
-            if (!$response || !isset($response['hadis'])) {
+            if (!$response || !isset($response['hadis']) || empty($response['hadis'])) {
                 break;
             }
 
@@ -186,7 +190,7 @@ class HadithService
                 }
             }
 
-            if (!$response['paging']['has_next']) {
+            if (!isset($response['paging']['has_next']) || !$response['paging']['has_next']) {
                 break;
             }
         }
