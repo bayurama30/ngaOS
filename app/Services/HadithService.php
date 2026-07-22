@@ -90,49 +90,51 @@ class HadithService
             return ['hadis' => [], 'paging' => []];
         }
 
-        $cacheKey = "hadith:mukharrij:{$mukharrijKey}:{$page}:{$limit}";
+        // Use a single cache key for all hadiths of this collection
+        $allCacheKey = "hadith:mukharrij:all:{$mukharrijKey}";
+        
+        $allHadis = Cache::get($allCacheKey);
+        
+        if (!$allHadis) {
+            $allHadis = [];
+            $keywords = $mukharrij['keywords'];
+            $maxPages = 226;
 
-        $cached = Cache::get($cacheKey);
-        if ($cached) {
-            return $cached;
-        }
+            for ($p = 1; $p <= $maxPages; $p++) {
+                $response = $this->api->get('/hadis/enc/explore', [
+                    'page' => $p,
+                    'limit' => 10,
+                ]);
 
-        $allHadis = [];
-        $keywords = $mukharrij['keywords'];
-        $maxPages = 226; // API has 226 pages total (2260 hadiths / 10 per page)
+                if (!$response || !isset($response['hadis']) || empty($response['hadis'])) {
+                    break;
+                }
 
-        for ($p = 1; $p <= $maxPages; $p++) {
-            $response = $this->api->get('/hadis/enc/explore', [
-                'page' => $p,
-                'limit' => 10, // API max limit is 10
-            ]);
+                foreach ($response['hadis'] as $hadis) {
+                    $takhrij = $hadis['takhrij'] ?? '';
 
-            if (!$response || !isset($response['hadis']) || empty($response['hadis'])) {
-                break;
-            }
-
-            foreach ($response['hadis'] as $hadis) {
-                $takhrij = $hadis['takhrij'] ?? '';
-
-                foreach ($keywords as $keyword) {
-                    if (stripos($takhrij, $keyword) !== false) {
-                        $allHadis[] = $hadis;
-                        break;
+                    foreach ($keywords as $keyword) {
+                        if (stripos($takhrij, $keyword) !== false) {
+                            $allHadis[] = $hadis;
+                            break;
+                        }
                     }
+                }
+
+                if (!isset($response['paging']['has_next']) || !$response['paging']['has_next']) {
+                    break;
                 }
             }
 
-            // Check if there are more pages
-            if (!isset($response['paging']['has_next']) || !$response['paging']['has_next']) {
-                break;
-            }
+            // Cache all hadiths for this collection for 7 days
+            Cache::put($allCacheKey, $allHadis, 604800);
         }
 
         $total = count($allHadis);
         $offset = ($page - 1) * $limit;
         $paginatedHadis = array_slice($allHadis, $offset, $limit);
 
-        $result = [
+        return [
             'hadis' => $paginatedHadis,
             'paging' => [
                 'current' => $page,
@@ -143,19 +145,15 @@ class HadithService
                 'has_next' => $page < ceil($total / $limit),
             ],
         ];
-
-        Cache::put($cacheKey, $result, $this->cacheTtl);
-
-        return $result;
     }
 
     public function getMukharrijCounts(): array
     {
-        $cacheKey = 'hadith:mukharrij:counts';
+        $cacheKey = 'hadith:mukharrij:counts:all';
 
-        $cached = Cache::get($cacheKey);
-        if ($cached) {
-            return $cached;
+        $counts = Cache::get($cacheKey);
+        if ($counts) {
+            return $counts;
         }
 
         $counts = [];
@@ -165,12 +163,12 @@ class HadithService
             $counts[$key] = 0;
         }
 
-        $maxPages = 226; // API has 226 pages total
+        $maxPages = 226;
 
         for ($p = 1; $p <= $maxPages; $p++) {
             $response = $this->api->get('/hadis/enc/explore', [
                 'page' => $p,
-                'limit' => 10, // API max limit is 10
+                'limit' => 10,
             ]);
 
             if (!$response || !isset($response['hadis']) || empty($response['hadis'])) {
@@ -195,7 +193,7 @@ class HadithService
             }
         }
 
-        Cache::put($cacheKey, $counts, $this->cacheTtl * 7);
+        Cache::put($cacheKey, $counts, 604800); // Cache for 7 days
 
         return $counts;
     }
