@@ -99,12 +99,12 @@ class HadithService
 
         $allHadis = [];
         $keywords = $mukharrij['keywords'];
-        $maxPages = 200; // Increase from 50 to 200 to fetch more hadiths
+        $maxPages = 226; // API has 226 pages total (2260 hadiths / 10 per page)
 
         for ($p = 1; $p <= $maxPages; $p++) {
             $response = $this->api->get('/hadis/enc/explore', [
                 'page' => $p,
-                'limit' => 50, // Increase from 10 to 50 per page
+                'limit' => 10, // API max limit is 10
             ]);
 
             if (!$response || !isset($response['hadis']) || empty($response['hadis'])) {
@@ -165,12 +165,12 @@ class HadithService
             $counts[$key] = 0;
         }
 
-        $maxPages = 200; // Increase from 50 to 200
+        $maxPages = 226; // API has 226 pages total
 
         for ($p = 1; $p <= $maxPages; $p++) {
             $response = $this->api->get('/hadis/enc/explore', [
                 'page' => $p,
-                'limit' => 50, // Increase from 10 to 50
+                'limit' => 10, // API max limit is 10
             ]);
 
             if (!$response || !isset($response['hadis']) || empty($response['hadis'])) {
