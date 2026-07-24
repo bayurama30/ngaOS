@@ -10,6 +10,7 @@
         <meta name="apple-mobile-web-app-title" content="NgaOS">
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
         <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.png" type="image/png" sizes="512x512">
         <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
         <link rel="manifest" href="/manifest.json">
 
