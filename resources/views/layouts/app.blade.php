@@ -277,18 +277,12 @@
                                             </svg>
                                             <span>Arah Kiblat</span>
                                         </a>
-                                        <a href="{{ route('forum.index') }}" class="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>
-                                            </svg>
-                                            <span>Forum Komunitas</span>
-                                        </a>
-                                        <a href="{{ route('chatbot.index') }}" class="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-                                            </svg>
-                                            <span>AI Chatbot</span>
-                                        </a>
+                                         <a href="{{ route('chatbot.index') }}" class="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300 hover:text-teal-600 dark:hover:text-teal-400 transition">
+                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                                             </svg>
+                                             <span>AI Chatbot</span>
+                                         </a>
                                     </div>
                                 </div>
 
@@ -324,18 +318,12 @@
                                 </svg>
                                 <span class="text-xs mt-0.5">Solat</span>
                             </a>
-                            <a href="{{ route('forum.index') }}" class="flex flex-col items-center justify-center w-full h-full {{ request()->routeIs('forum.*') ? 'text-teal-600 dark:text-teal-400' : 'text-gray-500 dark:text-gray-400' }}">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>
-                                </svg>
-                                <span class="text-xs mt-0.5">Forum</span>
-                            </a>
-                            <a href="{{ route('chatbot.index') }}" class="flex flex-col items-center justify-center w-full h-full {{ request()->routeIs('chatbot.*') ? 'text-teal-600 dark:text-teal-400' : 'text-gray-500 dark:text-gray-400' }}">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-                                </svg>
-                                <span class="text-xs mt-0.5">AI</span>
-                            </a>
+                             <a href="{{ route('chatbot.index') }}" class="flex flex-col items-center justify-center w-full h-full {{ request()->routeIs('chatbot.*') ? 'text-teal-600 dark:text-teal-400' : 'text-gray-500 dark:text-gray-400' }}">
+                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                                 </svg>
+                                 <span class="text-xs mt-0.5">AI</span>
+                             </a>
                         </div>
                     </nav>
                 @endauth

@@ -78,15 +78,6 @@
                         <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Jadwal</span>
                     </a>
 
-                    <a href="{{ route('forum.index') }}" class="card-hover flex flex-col items-center p-4 group h-32 sm:h-28">
-                        <div class="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-200">
-                            <svg class="w-6 h-6 text-rose-600 dark:text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>
-                            </svg>
-                        </div>
-                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Forum</span>
-                    </a>
-
                     <a href="{{ route('chatbot.index') }}" class="card-hover flex flex-col items-center p-4 group h-32 sm:h-28">
                         <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-200">
                             <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,49 +149,6 @@
                 <p class="text-gray-600 dark:text-gray-400 text-sm italic" x-text="verse?.translation"></p>
                 <p class="text-teal-600 dark:text-teal-400 text-sm font-medium" x-text="verse?.reference"></p>
             </div>
-        </div>
-
-        {{-- Latest Forum Posts --}}
-        <div class="mb-6">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-bold text-gray-900 dark:text-white">Forum Terbaru</h3>
-                <a href="{{ route('forum.index') }}" class="text-teal-600 dark:text-teal-400 text-sm font-medium hover:underline">Lihat Semua</a>
-            </div>
-            @php
-                $latestPosts = \App\Models\Post::with('user')->latest()->take(3)->get();
-            @endphp
-            @forelse($latestPosts as $post)
-                <a href="{{ route('forum.show', $post) }}" class="card-hover block mb-3 group animate-slide-up">
-                    <div class="flex items-center mb-2">
-                        <div class="w-8 h-8 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center mr-2">
-                            <span class="text-white text-sm font-bold">{{ strtoupper(substr($post->user->name, 0, 1)) }}</span>
-                        </div>
-                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $post->user->name }}</span>
-                        <span class="text-xs text-gray-400 dark:text-gray-500 ml-auto">{{ $post->created_at->diffForHumans() }}</span>
-                    </div>
-                    <h4 class="font-semibold text-gray-900 dark:text-white mb-1">{{ $post->title }}</h4>
-                    <p class="text-gray-600 dark:text-gray-400 text-sm line-clamp-2">{{ Str::limit($post->body, 100) }}</p>
-                    <div class="flex items-center mt-3 text-xs text-gray-500 dark:text-gray-400 space-x-4">
-                        <span class="flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                            </svg>
-                            {{ $post->likes_count }}
-                        </span>
-                        <span class="flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-                            </svg>
-                            {{ $post->comments_count }}
-                        </span>
-                        <span class="badge-teal badge">{{ $post->category }}</span>
-                    </div>
-                </a>
-            @empty
-                <div class="card text-center py-8">
-                    <p class="text-gray-500 dark:text-gray-400">Belum ada postingan</p>
-                </div>
-            @endforelse
         </div>
     </div>
 
