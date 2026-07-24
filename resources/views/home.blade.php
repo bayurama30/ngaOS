@@ -38,11 +38,11 @@
 
         {{-- Quick Actions --}}
         <div x-data="{ currentPage: 0, totalPages: 2 }" class="mb-6">
-            <div class="overflow-x-auto snap-x snap-mandatory flex scrollbar-hide scroll-smooth" x-ref="quickActions"
+            <div class="overflow-x-auto snap-x snap-mandatory flex scrollbar-hide scroll-smooth touch-pan-x" x-ref="quickActions"
                  @scroll="currentPage = Math.round($refs.quickActions.scrollLeft / $refs.quickActions.offsetWidth)">
                 {{-- Page 1 --}}
                 <div class="snap-start min-w-full grid grid-cols-3 gap-3 px-0.5">
-                    <a href="{{ route('quran.index') }}" class="card-hover flex flex-col items-center p-4 group h-28">
+                    <a href="{{ route('quran.index') }}" class="card-hover flex flex-col items-center p-4 group h-32 sm:h-28">
                         <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-200">
                             <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
@@ -51,7 +51,7 @@
                         <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Al-Quran</span>
                     </a>
 
-                    <a href="{{ route('hadith.index') }}" class="card-hover flex flex-col items-center p-4 group h-28">
+                    <a href="{{ route('hadith.index') }}" class="card-hover flex flex-col items-center p-4 group h-32 sm:h-28">
                         <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-200">
                             <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
@@ -60,7 +60,7 @@
                         <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Hadis</span>
                     </a>
 
-                    <a href="{{ route('qibla.index') }}" class="card-hover flex flex-col items-center p-4 group h-28">
+                    <a href="{{ route('qibla.index') }}" class="card-hover flex flex-col items-center p-4 group h-32 sm:h-28">
                         <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-200">
                             <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
@@ -69,7 +69,7 @@
                         <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Kiblat</span>
                     </a>
 
-                    <a href="{{ route('prayer.index') }}" class="card-hover flex flex-col items-center p-4 group h-28">
+                    <a href="{{ route('prayer.index') }}" class="card-hover flex flex-col items-center p-4 group h-32 sm:h-28">
                         <div class="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-200">
                             <svg class="w-6 h-6 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -78,7 +78,7 @@
                         <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Jadwal</span>
                     </a>
 
-                    <a href="{{ route('forum.index') }}" class="card-hover flex flex-col items-center p-4 group h-28">
+                    <a href="{{ route('forum.index') }}" class="card-hover flex flex-col items-center p-4 group h-32 sm:h-28">
                         <div class="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-200">
                             <svg class="w-6 h-6 text-rose-600 dark:text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>
@@ -87,7 +87,7 @@
                         <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Forum</span>
                     </a>
 
-                    <a href="{{ route('chatbot.index') }}" class="card-hover flex flex-col items-center p-4 group h-28">
+                    <a href="{{ route('chatbot.index') }}" class="card-hover flex flex-col items-center p-4 group h-32 sm:h-28">
                         <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-200">
                             <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
@@ -99,7 +99,7 @@
 
                 {{-- Page 2 --}}
                 <div class="snap-start min-w-full grid grid-cols-3 gap-3 px-0.5">
-                    <a href="{{ route('hijri.index') }}" class="card-hover flex flex-col items-center p-4 group h-28">
+                    <a href="{{ route('hijri.index') }}" class="card-hover flex flex-col items-center p-4 group h-32 sm:h-28">
                         <div class="w-12 h-12 bg-cyan-100 dark:bg-cyan-900/30 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-200">
                             <svg class="w-6 h-6 text-cyan-600 dark:text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
