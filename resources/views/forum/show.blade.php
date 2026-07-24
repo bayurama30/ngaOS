@@ -45,7 +45,7 @@
             <h3 class="font-semibold text-gray-900 dark:text-white mb-3">Komentar ({{ $post->comments_count }})</h3>
             <form action="{{ route('forum.comment', $post) }}" method="POST" class="flex space-x-2">
                 @csrf
-                <input type="text" name="body" required placeholder="Tulis komentar..." class="flex-1 glass-input px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 dark:focus:ring-teal-400/50 transition-all duration-200">
+                <input type="text" name="body" required placeholder="Tulis komentar..." class="flex-1 glass-input px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-500/50 dark:focus:ring-teal-400/50 transition-all duration-200" style="font-size: 16px;">
                 <button type="submit" class="btn-primary">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
