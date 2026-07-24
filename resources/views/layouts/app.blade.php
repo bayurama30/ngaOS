@@ -9,6 +9,8 @@
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         <meta name="apple-mobile-web-app-title" content="NgaOS">
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
         <link rel="manifest" href="/manifest.json">
 
         <title>{{ config('app.name', 'NgaOS') }}</title>

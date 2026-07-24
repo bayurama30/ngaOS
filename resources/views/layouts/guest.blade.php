@@ -6,6 +6,8 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="theme-color" content="#0D9488">
         <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 
         <title>{{ config('app.name', 'NgaOS') }}</title>
 
