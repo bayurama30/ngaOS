@@ -8,6 +8,7 @@ FROM php:8.3-fpm
 RUN apt-get update && apt-get install -y \
     git curl zip unzip libpng-dev libonig-dev libxml2-dev libzip-dev \
     libpq-dev libcurl4-openssl-dev pkg-config libssl-dev \
+    libicu-dev \
     && docker-php-ext-install pdo_pgsql pgsql mbstring xml curl zip gd intl bcmath exif pcntl \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
