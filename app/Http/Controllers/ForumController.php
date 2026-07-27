@@ -4,13 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Comment;
 use App\Models\Post;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 
 class ForumController extends Controller
 {
     public function index()
     {
-        return view('forum.index');
+        $posts = Post::with('user')->latest()->paginate(10);
+
+        return view('forum.index', [
+            'posts' => $posts,
+        ]);
     }
 
     public function show(Post $post)
@@ -68,9 +73,13 @@ class ForumController extends Controller
             $post->decrement('likes_count');
             $liked = false;
         } else {
-            $post->likes()->create(['user_id' => $user->id]);
-            $post->increment('likes_count');
-            $liked = true;
+            try {
+                $post->likes()->create(['user_id' => $user->id]);
+                $post->increment('likes_count');
+                $liked = true;
+            } catch (QueryException $e) {
+                $liked = true;
+            }
         }
 
         return response()->json([
@@ -84,7 +93,7 @@ class ForumController extends Controller
         $user = $request->user();
 
         $existing = $user->bookmarks()
-            ->where('bookmarkable_type', Post::class)
+            ->where('bookmarkable_type', 'post')
             ->where('bookmarkable_id', $post->id)
             ->first();
 
@@ -92,11 +101,15 @@ class ForumController extends Controller
             $existing->delete();
             $bookmarked = false;
         } else {
-            $user->bookmarks()->create([
-                'bookmarkable_type' => Post::class,
-                'bookmarkable_id' => $post->id,
-            ]);
-            $bookmarked = true;
+            try {
+                $user->bookmarks()->create([
+                    'bookmarkable_type' => 'post',
+                    'bookmarkable_id' => $post->id,
+                ]);
+                $bookmarked = true;
+            } catch (QueryException $e) {
+                $bookmarked = true;
+            }
         }
 
         return response()->json(['bookmarked' => $bookmarked]);

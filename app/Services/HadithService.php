@@ -79,6 +79,7 @@ class HadithService
     public function getMukharrij(string $key): ?array
     {
         $list = $this->getMukharrijList();
+
         return $list[$key] ?? null;
     }
 
@@ -86,16 +87,16 @@ class HadithService
     {
         $mukharrij = $this->getMukharrij($mukharrijKey);
 
-        if (!$mukharrij) {
+        if (! $mukharrij) {
             return ['hadis' => [], 'paging' => []];
         }
 
         // Use a single cache key for all hadiths of this collection
         $allCacheKey = "hadith:mukharrij:all:{$mukharrijKey}";
-        
+
         $allHadis = Cache::get($allCacheKey);
-        
-        if (!$allHadis) {
+
+        if (! $allHadis) {
             $allHadis = [];
             $keywords = $mukharrij['keywords'];
             $maxPages = 226;
@@ -106,7 +107,7 @@ class HadithService
                     'limit' => 10,
                 ]);
 
-                if (!$response || !isset($response['hadis']) || empty($response['hadis'])) {
+                if (! $response || ! isset($response['hadis']) || empty($response['hadis'])) {
                     break;
                 }
 
@@ -121,7 +122,7 @@ class HadithService
                     }
                 }
 
-                if (!isset($response['paging']['has_next']) || !$response['paging']['has_next']) {
+                if (! isset($response['paging']['has_next']) || ! $response['paging']['has_next']) {
                     break;
                 }
             }
@@ -171,7 +172,7 @@ class HadithService
                 'limit' => 10,
             ]);
 
-            if (!$response || !isset($response['hadis']) || empty($response['hadis'])) {
+            if (! $response || ! isset($response['hadis']) || empty($response['hadis'])) {
                 break;
             }
 
@@ -188,7 +189,7 @@ class HadithService
                 }
             }
 
-            if (!isset($response['paging']['has_next']) || !$response['paging']['has_next']) {
+            if (! isset($response['paging']['has_next']) || ! $response['paging']['has_next']) {
                 break;
             }
         }
@@ -209,12 +210,13 @@ class HadithService
 
     public function getRandomHadith(): ?array
     {
-        $response = Http::timeout(15)->get(config('muslim.api_url') . '/hadis/enc/random', [
+        $response = Http::timeout(15)->get(config('muslim.api_url').'/hadis/enc/random', [
             '_' => time(),
         ]);
 
         if ($response->successful()) {
             $data = $response->json();
+
             return $data['data'] ?? $data;
         }
 
@@ -241,7 +243,7 @@ class HadithService
 
     public function search(string $keyword, int $page = 1, int $limit = 10): ?array
     {
-        $cacheKey = "hadith:search:" . md5($keyword) . ":{$page}:{$limit}";
+        $cacheKey = 'hadith:search:'.md5($keyword).":{$page}:{$limit}";
 
         $cached = Cache::get($cacheKey);
         if ($cached) {
@@ -253,14 +255,16 @@ class HadithService
             'limit' => $limit,
         ]);
 
-        if (!$searchResults || !isset($searchResults['hadis'])) {
+        if (! $searchResults || ! isset($searchResults['hadis'])) {
             return $searchResults;
         }
 
         $enrichedHadis = [];
         foreach ($searchResults['hadis'] as $hadis) {
             $id = $hadis['id'] ?? null;
-            if (!$id) continue;
+            if (! $id) {
+                continue;
+            }
 
             $fullHadith = $this->getHadith($id);
             if ($fullHadith) {

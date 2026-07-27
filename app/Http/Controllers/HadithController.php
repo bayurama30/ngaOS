@@ -24,7 +24,7 @@ class HadithController extends Controller
     {
         $mukharrij = $this->hadithService->getMukharrij($key);
 
-        if (!$mukharrij) {
+        if (! $mukharrij) {
             abort(404);
         }
 

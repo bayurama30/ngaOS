@@ -19,10 +19,6 @@
             <button @click="category = 'fiqih'" :class="['px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition', category === 'fiqih' ? 'bg-teal-600 text-white' : 'glass-card text-gray-600 dark:text-gray-300']">Fiqih</button>
         </div>
 
-        @php
-            $posts = \App\Models\Post::with('user')->latest()->paginate(10);
-        @endphp
-
         <div class="space-y-3">
             @forelse($posts as $post)
                 <a href="{{ route('forum.show', $post) }}" class="card-hover block group animate-slide-up">

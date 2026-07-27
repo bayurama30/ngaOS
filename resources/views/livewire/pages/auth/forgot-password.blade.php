@@ -1,8 +1,11 @@
 <?php
 
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
@@ -23,6 +26,16 @@ new #[Layout('layouts.guest')] class extends Component
             'email' => ['required', 'string', 'email'],
         ]);
 
+        $throttleKey = 'otp:' . strtolower($this->email);
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 3)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+            $this->addError('email', "Terlalu banyak percobaan. Coba lagi dalam {$seconds} detik.");
+            return;
+        }
+
+        RateLimiter::hit($throttleKey, 600);
+
         $user = User::where('email', $this->email)->first();
 
         if (!$user) {
@@ -37,7 +50,7 @@ new #[Layout('layouts.guest')] class extends Component
             ['email' => $this->email],
             [
                 'token' => bcrypt($token),
-                'otp' => $otp,
+                'otp' => Hash::make($otp),
                 'otp_expires_at' => now()->addMinutes(10),
                 'created_at' => now(),
             ]
@@ -67,7 +80,7 @@ new #[Layout('layouts.guest')] class extends Component
             ->where('email', $this->email)
             ->first();
 
-        if (!$reset || $reset->otp !== $this->otp) {
+        if (!$reset || !Hash::check($this->otp, $reset->otp)) {
             $this->addError('otp', 'Kode OTP tidak valid.');
             return;
         }
@@ -76,6 +89,8 @@ new #[Layout('layouts.guest')] class extends Component
             $this->addError('otp', 'Kode OTP sudah kedaluwarsa.');
             return;
         }
+
+        RateLimiter::clear('otp:' . strtolower($this->email));
 
         $this->step = 3;
     }

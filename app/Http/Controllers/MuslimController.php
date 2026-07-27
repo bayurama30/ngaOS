@@ -37,7 +37,7 @@ class MuslimController extends Controller
         $cityId = $request->get('city_id');
         $timezone = $request->get('tz', config('muslim.default_timezone'));
 
-        if (!$cityId) {
+        if (! $cityId) {
             return response()->json(['error' => 'city_id required'], 400);
         }
 
@@ -51,7 +51,7 @@ class MuslimController extends Controller
         $lat = $request->get('lat');
         $lng = $request->get('lng');
 
-        if (!$lat || !$lng) {
+        if (! $lat || ! $lng) {
             return response()->json(['error' => 'lat and lng required'], 400);
         }
 

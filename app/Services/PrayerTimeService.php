@@ -18,7 +18,7 @@ class PrayerTimeService
 
     public function searchCity(string $keyword): ?array
     {
-        $cacheKey = 'muslim:city:search:' . md5($keyword);
+        $cacheKey = 'muslim:city:search:'.md5($keyword);
 
         return Cache::remember($cacheKey, 86400, function () use ($keyword) {
             return $this->api->get("/sholat/kabkota/cari/{$keyword}");
@@ -43,7 +43,9 @@ class PrayerTimeService
                 'tz' => $timezone,
             ]);
 
-            if (!$response) return null;
+            if (! $response) {
+                return null;
+            }
 
             if (isset($response['jadwal']) && is_array($response['jadwal'])) {
                 $dateKey = array_key_first($response['jadwal']);
@@ -81,13 +83,13 @@ class PrayerTimeService
 
     public function getNextPrayer(?array $schedule): ?array
     {
-        if (!$schedule || !isset($schedule['jadwal'])) {
+        if (! $schedule || ! isset($schedule['jadwal'])) {
             return null;
         }
 
         $jadwal = $schedule['jadwal'];
-        $now = new \DateTime();
-        $today = $now->format('Y-m-d');
+        $timezone = $schedule['timezone'] ?? config('muslim.default_timezone', 'Asia/Jakarta');
+        $now = new \DateTime('now', new \DateTimeZone($timezone));
 
         $prayers = [
             'Subuh' => $jadwal['subuh'] ?? null,
@@ -100,9 +102,11 @@ class PrayerTimeService
         ];
 
         foreach ($prayers as $name => $time) {
-            if (!$time) continue;
+            if (! $time) {
+                continue;
+            }
 
-            $prayerTime = \DateTime::createFromFormat('H:i', $time);
+            $prayerTime = \DateTime::createFromFormat('H:i', $time, new \DateTimeZone($timezone));
 
             if ($prayerTime > $now) {
                 $diff = $now->diff($prayerTime);
@@ -115,7 +119,7 @@ class PrayerTimeService
             }
         }
 
-        $firstPrayer = \DateTime::createFromFormat('H:i', $prayers['Subuh']);
+        $firstPrayer = \DateTime::createFromFormat('H:i', $prayers['Subuh'], new \DateTimeZone($timezone));
         $firstPrayer->modify('+1 day');
         $diff = $now->diff($firstPrayer);
 

@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 
 class ForgotPasswordController extends Controller
@@ -24,9 +25,19 @@ class ForgotPasswordController extends Controller
             'email' => 'required|email',
         ]);
 
+        $throttleKey = 'otp:'.strtolower($request->email);
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 3)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+
+            return back()->withErrors(['email' => "Terlalu banyak percobaan. Coba lagi dalam {$seconds} detik."]);
+        }
+
+        RateLimiter::hit($throttleKey, 600);
+
         $user = User::where('email', $request->email)->first();
 
-        if (!$user) {
+        if (! $user) {
             return back()->withErrors(['email' => 'Email tidak terdaftar.']);
         }
 
@@ -37,7 +48,7 @@ class ForgotPasswordController extends Controller
             ['email' => $request->email],
             [
                 'token' => bcrypt($token),
-                'otp' => $otp,
+                'otp' => Hash::make($otp),
                 'otp_expires_at' => Carbon::now()->addMinutes(10),
                 'created_at' => Carbon::now(),
             ]
@@ -45,9 +56,9 @@ class ForgotPasswordController extends Controller
 
         try {
             Mail::raw(
-                "Kode OTP NgaOS Anda: {$otp}\n\n" .
-                "Kode ini berlaku selama 10 menit.\n\n" .
-                "Jangan bagikan kode ini kepada siapapun.",
+                "Kode OTP NgaOS Anda: {$otp}\n\n".
+                "Kode ini berlaku selama 10 menit.\n\n".
+                'Jangan bagikan kode ini kepada siapapun.',
                 function ($message) use ($request) {
                     $message->to($request->email)
                         ->subject('Kode OTP Reset Password - NgaOS');
@@ -76,7 +87,7 @@ class ForgotPasswordController extends Controller
             ->where('email', $request->email)
             ->first();
 
-        if (!$reset || $reset->otp !== $request->otp) {
+        if (! $reset || ! Hash::check($request->otp, $reset->otp)) {
             return back()->withErrors(['otp' => 'Kode OTP tidak valid.'])->with([
                 'otp_sent' => true,
                 'email' => $request->email,
@@ -91,6 +102,8 @@ class ForgotPasswordController extends Controller
                 'token' => $request->token,
             ]);
         }
+
+        RateLimiter::clear('otp:'.strtolower($request->email));
 
         return view('auth.reset-password', [
             'email' => $request->email,
@@ -110,13 +123,17 @@ class ForgotPasswordController extends Controller
             ->where('email', $request->email)
             ->first();
 
-        if (!$reset) {
+        if (! $reset) {
+            return back()->withErrors(['email' => 'Token tidak valid.']);
+        }
+
+        if (! Hash::check($request->token, $reset->token)) {
             return back()->withErrors(['email' => 'Token tidak valid.']);
         }
 
         $user = User::where('email', $request->email)->first();
 
-        if (!$user) {
+        if (! $user) {
             return back()->withErrors(['email' => 'User tidak ditemukan.']);
         }
 

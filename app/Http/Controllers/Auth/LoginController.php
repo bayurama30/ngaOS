@@ -27,7 +27,7 @@ class LoginController extends Controller
 
         $field = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
 
-        if (!Auth::attempt([$field => $request->login, 'password' => $request->password], $request->boolean('remember'))) {
+        if (! Auth::attempt([$field => $request->login, 'password' => $request->password], $request->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey($request));
 
             throw ValidationException::withMessages([
@@ -44,19 +44,19 @@ class LoginController extends Controller
 
     protected function ensureIsNotRateLimited(Request $request): void
     {
-        if (!RateLimiter::tooManyAttempts($this->throttleKey($request), 5)) {
+        if (! RateLimiter::tooManyAttempts($this->throttleKey($request), 5)) {
             return;
         }
 
         $seconds = RateLimiter::availableIn($this->throttleKey($request));
 
         throw ValidationException::withMessages([
-            'login' => 'Terlalu banyak percobaan. Coba lagi dalam ' . ceil($seconds / 60) . ' menit.',
+            'login' => 'Terlalu banyak percobaan. Coba lagi dalam '.ceil($seconds / 60).' menit.',
         ]);
     }
 
     protected function throttleKey(Request $request): string
     {
-        return Str::transliterate(Str::lower($request->input('login')) . '|' . $request->ip());
+        return Str::transliterate(Str::lower($request->input('login')).'|'.$request->ip());
     }
 }

@@ -20,7 +20,7 @@ class MuslimApiService
 
     public function get(string $endpoint, array $query = []): ?array
     {
-        $cacheKey = 'muslim:' . $endpoint . '?' . http_build_query($query);
+        $cacheKey = 'muslim:'.$endpoint.'?'.http_build_query($query);
 
         return Cache::remember($cacheKey, $this->cacheTtl, function () use ($endpoint, $query) {
             try {
@@ -84,7 +84,7 @@ class MuslimApiService
     public function clearCache(?string $endpoint = null): void
     {
         if ($endpoint) {
-            Cache::forget('muslim:' . $endpoint);
+            Cache::forget('muslim:'.$endpoint.'?');
         }
     }
 }

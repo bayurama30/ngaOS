@@ -22,12 +22,12 @@ class GeminiChatService
 
     public function __construct()
     {
-        $this->apiKey = config('gemini.api_key');
-        $this->apiUrl = config('gemini.api_url');
-        $this->model = config('gemini.model');
-        $this->maxTokens = config('gemini.max_tokens');
-        $this->temperature = config('gemini.temperature');
-        $this->systemPrompt = config('gemini.system_prompt');
+        $this->apiKey = config('ai.api_key');
+        $this->apiUrl = config('ai.api_url');
+        $this->model = config('ai.model');
+        $this->maxTokens = config('ai.max_tokens');
+        $this->temperature = config('ai.temperature');
+        $this->systemPrompt = config('ai.system_prompt');
     }
 
     public function chat(string $message, int $userId): string
@@ -55,7 +55,7 @@ class GeminiChatService
 
                 $this->saveHistory($userId, $message, $aiResponse);
 
-                Log::info('Chat success with model: ' . $this->model);
+                Log::info('Chat success with model: '.$this->model);
 
                 return $aiResponse;
             }
@@ -158,6 +158,6 @@ class GeminiChatService
 
     public function getQuickPrompts(): array
     {
-        return config('gemini.quick_prompts', []);
+        return config('ai.quick_prompts', []);
     }
 }

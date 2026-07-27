@@ -27,9 +27,10 @@ return [
         13 => 'Diyanet İşleri Başkanlığı, Turkey',
         14 => 'Spiritual Administration of Muslims of Russia',
         15 => 'Moonsighting Committee Worldwide',
+        20 => 'Kementerian Agama Republik Indonesia',
     ],
 
-    'default_method' => env('PRAYER_DEFAULT_METHOD', 2),
+    'default_method' => env('PRAYER_DEFAULT_METHOD', 20),
 
     'qibla_kaaba' => [
         'lat' => 21.4225,

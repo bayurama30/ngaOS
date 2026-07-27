@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
@@ -8,14 +10,14 @@ Route::middleware('guest')->group(function () {
     Volt::route('register', 'pages.auth.register')
         ->name('register');
 
-    Route::get('login', [\App\Http\Controllers\Auth\LoginController::class, 'show'])->name('login');
-    Route::post('login', [\App\Http\Controllers\Auth\LoginController::class, 'store']);
+    Route::get('login', [LoginController::class, 'show'])->name('login');
+    Route::post('login', [LoginController::class, 'store']);
 
     // Forgot Password with OTP
-    Route::get('forgot-password', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'show'])->name('password.request');
-    Route::post('forgot-password/otp', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'sendOtp'])->name('password.otp.send');
-    Route::post('forgot-password/verify', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'verifyOtp'])->name('password.otp.verify');
-    Route::post('forgot-password/reset', [\App\Http\Controllers\Auth\ForgotPasswordController::class, 'resetPassword'])->name('password.reset');
+    Route::get('forgot-password', [ForgotPasswordController::class, 'show'])->name('password.request');
+    Route::post('forgot-password/otp', [ForgotPasswordController::class, 'sendOtp'])->name('password.otp.send');
+    Route::post('forgot-password/verify', [ForgotPasswordController::class, 'verifyOtp'])->name('password.otp.verify');
+    Route::post('forgot-password/reset', [ForgotPasswordController::class, 'resetPassword'])->name('password.reset');
 });
 
 Route::middleware('auth')->group(function () {
@@ -33,6 +35,7 @@ Route::middleware('auth')->group(function () {
         auth()->logout();
         request()->session()->invalidate();
         request()->session()->regenerateToken();
+
         return redirect('/');
     })->name('logout');
 });

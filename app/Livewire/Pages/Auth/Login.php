@@ -12,7 +12,9 @@ use Livewire\Component;
 class Login extends Component
 {
     public string $login = '';
+
     public string $password = '';
+
     public bool $remember = false;
 
     protected function rules(): array
@@ -31,11 +33,12 @@ class Login extends Component
 
         $field = filter_var($this->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
 
-        if (!Auth::attempt([$field => $this->login, 'password' => $this->password], $this->remember)) {
+        if (! Auth::attempt([$field => $this->login, 'password' => $this->password], $this->remember)) {
             RateLimiter::hit($this->throttleKey());
 
             $this->addError('login', 'Email/HP atau password salah.');
             $this->reset('password');
+
             return;
         }
 
@@ -48,7 +51,7 @@ class Login extends Component
 
     protected function ensureIsNotRateLimited(): void
     {
-        if (!RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
             return;
         }
 
@@ -56,14 +59,14 @@ class Login extends Component
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
-        $this->addError('login', 'Terlalu banyak percobaan. Coba lagi dalam ' . ceil($seconds / 60) . ' menit.');
+        $this->addError('login', 'Terlalu banyak percobaan. Coba lagi dalam '.ceil($seconds / 60).' menit.');
 
         $this->stopPropagation();
     }
 
     protected function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->login) . '|' . request()->ip());
+        return Str::transliterate(Str::lower($this->login).'|'.request()->ip());
     }
 
     public function render()

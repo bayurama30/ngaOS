@@ -4,7 +4,6 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Collection;
 
 class QuranService
 {
@@ -45,9 +44,11 @@ class QuranService
                     'limit' => $limit,
                 ]);
 
-                if (!$response) break;
+                if (! $response) {
+                    break;
+                }
 
-                if (!$surahInfo && isset($response['number'])) {
+                if (! $surahInfo && isset($response['number'])) {
                     $surahInfo = [
                         'number' => $response['number'],
                         'name' => $response['name'],
@@ -68,7 +69,9 @@ class QuranService
                 $page++;
             } while (count($allAyahs) < $totalAyahs && $page <= 100);
 
-            if (!$surahInfo) return null;
+            if (! $surahInfo) {
+                return null;
+            }
 
             $surahInfo['ayahs'] = $allAyahs;
 
@@ -87,12 +90,13 @@ class QuranService
 
     public function getRandomAyah(): ?array
     {
-        $response = Http::timeout(15)->get(config('muslim.api_url') . '/quran/random', [
+        $response = Http::timeout(15)->get(config('muslim.api_url').'/quran/random', [
             '_' => time(),
         ]);
 
         if ($response->successful()) {
             $data = $response->json();
+
             return $data['data'] ?? $data;
         }
 
