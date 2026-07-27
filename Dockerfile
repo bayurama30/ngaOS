@@ -7,8 +7,7 @@ FROM php:8.3-fpm
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     git curl zip unzip libpng-dev libonig-dev libxml2-dev libzip-dev \
-    libpq-dev libcurl4-openssl-dev pkg-config libssl-dev \
-    libicu-dev \
+    libpq-dev libcurl4-openssl-dev pkg-config libssl-dev libicu-dev \
     && docker-php-ext-install pdo_pgsql pgsql mbstring xml curl zip gd intl bcmath exif pcntl \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -23,19 +22,14 @@ COPY --from=composer /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
-# Copy composer files and install dependencies
-COPY composer.json composer.lock* ./
-RUN rm -f composer.lock && composer install --no-dev --optimize-autoloader --ignore-platform-reqs
-
-# Copy package files and install dependencies
-COPY package.json package-lock.json ./
-RUN npm ci
-
-# Copy application code
+# Copy all files first
 COPY . .
 
-# Build frontend assets
-RUN npm run build
+# Install PHP dependencies
+RUN composer install --no-dev --optimize-autoloader
+
+# Install Node dependencies and build
+RUN npm ci && npm run build
 
 # Cache Laravel configurations
 RUN php artisan config:cache && php artisan route:cache && php artisan view:cache
