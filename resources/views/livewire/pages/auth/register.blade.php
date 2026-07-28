@@ -19,6 +19,8 @@ new #[Layout('layouts.guest')] class extends Component
 
     public function register(): void
     {
+        $fullPhone = $this->phone_country . ltrim($this->phone, '0');
+
         $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
@@ -26,10 +28,15 @@ new #[Layout('layouts.guest')] class extends Component
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
+        if (User::where('phone', $fullPhone)->exists()) {
+            $this->addError('phone', 'Nomor telepon sudah terdaftar.');
+            return;
+        }
+
         $user = User::create([
             'name' => $this->name,
             'email' => $this->email,
-            'phone' => $this->phone_country . $this->phone,
+            'phone' => $fullPhone,
             'phone_country' => $this->phone_country,
             'password' => Hash::make($this->password),
         ]);
@@ -38,7 +45,7 @@ new #[Layout('layouts.guest')] class extends Component
 
         Auth::login($user);
 
-        $this->redirect(route('dashboard'));
+        $this->redirect(route('dashboard'), navigate: true);
     }
 
     public function getCountryCodes(): array
