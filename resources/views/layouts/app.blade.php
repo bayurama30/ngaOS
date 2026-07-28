@@ -23,6 +23,7 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @livewireStyles
 
         <style>
             body { -webkit-tap-highlight-color: transparent; }
@@ -330,8 +331,7 @@
             </div>
         </div>
 
-        {{-- Alpine.js for interactivity --}}
-        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        {{-- Alpine.js (loaded by Livewire) --}}
 
         {{-- Sidebar Data Scripts --}}
         @auth
@@ -413,5 +413,6 @@
             }
         </script>
         @endauth
+        @livewireScripts
     </body>
 </html>

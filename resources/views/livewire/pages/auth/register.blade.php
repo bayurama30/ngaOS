@@ -94,11 +94,11 @@ new #[Layout('layouts.guest')] class extends Component
         </div>
     @endif
 
-    <form wire:submit.prevent="register">
+    <form wire:submit="register">
         <div class="space-y-4">
             <div>
                 <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
-                <input wire:model.live="name" id="name"
+                <input wire:model.blur="name" id="name"
                     class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
                     type="text" required autofocus placeholder="Masukkan nama lengkap">
             </div>
@@ -106,12 +106,12 @@ new #[Layout('layouts.guest')] class extends Component
             <div>
                 <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">No. HP</label>
                 <div class="flex space-x-2">
-                    <select wire:model.live="phone_country" class="w-24 border border-gray-200 rounded-xl px-3 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm">
+                    <select wire:model="phone_country" class="w-24 border border-gray-200 rounded-xl px-3 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm">
                         @foreach($this->getCountryCodes() as $country)
                             <option value="{{ $country['code'] }}">{{ $country['flag'] }} {{ $country['code'] }}</option>
                         @endforeach
                     </select>
-                    <input wire:model.live="phone" id="phone"
+                    <input wire:model.blur="phone" id="phone"
                         class="flex-1 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
                         type="tel" required placeholder="08xxxxxxxxxx">
                 </div>
@@ -119,21 +119,21 @@ new #[Layout('layouts.guest')] class extends Component
 
             <div>
                 <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input wire:model.live="email" id="email"
+                <input wire:model.blur="email" id="email"
                     class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
                     type="email" required placeholder="email@example.com">
             </div>
 
             <div>
                 <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                <input wire:model.live="password" id="password"
+                <input wire:model.blur="password" id="password"
                     class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
                     type="password" required placeholder="Minimal 8 karakter">
             </div>
 
             <div>
                 <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">Konfirmasi Password</label>
-                <input wire:model.live="password_confirmation" id="password_confirmation"
+                <input wire:model.blur="password_confirmation" id="password_confirmation"
                     class="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
                     type="password" required placeholder="Ulangi password">
             </div>
@@ -142,8 +142,8 @@ new #[Layout('layouts.guest')] class extends Component
         <button type="submit"
             class="w-full mt-6 bg-teal-600 text-white py-3 rounded-xl font-medium hover:bg-teal-700 transition disabled:opacity-50"
             wire:loading.attr="disabled">
-            <span wire:loading.remove>Daftar</span>
-            <span wire:loading class="inline-flex items-center">
+            <span wire:target="register" wire:loading.remove>Daftar</span>
+            <span wire:target="register" wire:loading class="inline-flex items-center">
                 <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

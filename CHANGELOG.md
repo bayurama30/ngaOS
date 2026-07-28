@@ -2,6 +2,73 @@
 
 All notable changes to NgaOS - Islamic Web App will be documented in this file.
 
+## [2.2.0] - 2026-07-28
+
+### 🔒 Security Fixes
+
+- **OTP Hashing** - OTP password reset sekarang di-hash dengan `Hash::make()`, verifikasi pakai `Hash::check()`
+- **Rate Limiting OTP** - Maksimal 3 percobaan OTP per 10 menit per email
+- **Token Verification** - Reset token sekarang diverifikasi dengan `Hash::check()`
+- **Forum Authorization** - Tambah validasi user pada forum actions
+
+### 🏗️ Architecture Improvements
+
+- **HijriCalendarService** - Extract ~260 lines math logic dari controller ke service class
+- **PrayerTimeController** - Hapus dead `PrayerTimeService` dependency
+- **ForumController** - Pindah query dari blade template ke controller
+- **Race Condition Fix** - Fix race condition pada like/bookmark dengan try-catch `QueryException`
+- **Morph Map** - Tambah `Relation::morphMap` untuk `post` dan `user` di AppServiceProvider
+
+### 🐛 Bug Fixes
+
+#### Registration
+- **Livewire Not Loading** - Tambah `@livewireStyles` dan `@livewireScripts` di layouts
+- **Button Glitch** - Ganti `wire:model.live` ke `wire:model.blur` untuk hindari flickering
+- **Phone Format** - Fix format phone number (hapus leading 0 saat gabung country code)
+- **Phone Uniqueness** - Tambah cek unique phone sebelum create user
+
+#### Services
+- **MuslimApiService** - Fix `clearCache()` key pattern mismatch
+- **PrayerTimeService** - Fix timezone handling di `getNextPrayer()` pakai `DateTimeZone`
+- **Deprecated strftime()** - Ganti dengan `Carbon::locale()` untuk nama hari/bulan
+
+### ⚙️ Config Changes
+
+- **Rename gemini.php → ai.php** - Fix naming mismatch (pakai OpenRouter, bukan Gemini)
+- **Prayer Default Method** - Ubah dari ISNA (2) ke Kemenag Indonesia (20)
+- **Symfony Downgrade** - Downgrade ke v7.4 untuk kompatibilitas PHP 8.3
+- **Vite Downgrade** - Downgrade ke v6 untuk kompatibilitas Node 18
+
+### 📁 Files Added
+
+| File | Description |
+|------|-------------|
+| `app/Services/HijriCalendarService.php` | Service untuk konversi dan kalkulasi Hijriah |
+| `config/ai.php` | AI chat config (rename dari gemini.php) |
+| `Dockerfile` | Docker build untuk Railway deployment |
+| `.node-version` | Node.js version specification |
+
+### 📁 Files Modified
+
+| File | Changes |
+|------|---------|
+| `app/Http/Controllers/Auth/ForgotPasswordController.php` | Hash OTP, rate limiting, token verification |
+| `app/Http/Controllers/ForumController.php` | Fix race condition, pindah query dari blade |
+| `app/Http/Controllers/HijriCalendarController.php` | Delegate ke HijriCalendarService |
+| `app/Http/Controllers/PrayerTimeController.php` | Hapus dead dependency |
+| `app/Providers/AppServiceProvider.php` | Tambah morph map |
+| `app/Services/GeminiChatService.php` | Update config reference ke ai.* |
+| `app/Services/MuslimApiService.php` | Fix clearCache key pattern |
+| `app/Services/PrayerTimeService.php` | Fix timezone handling |
+| `config/prayer.php` | Tambah Kemenag method, ubah default |
+| `resources/views/layouts/app.blade.php` | Tambah @livewireStyles/@livewireScripts |
+| `resources/views/layouts/guest.blade.php` | Tambah @livewireStyles/@livewireScripts |
+| `resources/views/livewire/pages/auth/register.blade.php` | Fix phone format, blur model |
+| `resources/views/livewire/pages/auth/forgot-password.blade.php` | Hash OTP, rate limiting |
+| `resources/views/forum/index.blade.php` | Hapus @php query |
+
+---
+
 ## [2.1.0] - 2026-07-21
 
 ### ✨ New Features
