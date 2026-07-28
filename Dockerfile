@@ -33,4 +33,4 @@ RUN npm ci && npm run build
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8080"]
+CMD ["sh", "-c", "php artisan config:clear; php artisan route:clear; php artisan view:clear; php artisan storage:link || true; php artisan migrate --force; php artisan serve --host=0.0.0.0 --port=8080"]
