@@ -31,12 +31,6 @@ RUN composer install --no-dev --optimize-autoloader
 # Install Node dependencies and build
 RUN npm ci && npm run build
 
-# Cache Laravel configurations
-RUN php artisan config:cache && php artisan route:cache && php artisan view:cache
-
-# Create storage link
-RUN php artisan storage:link || true
-
 EXPOSE 8080
 
-CMD ["sh", "-c", "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8080"]
+CMD ["sh", "-c", "php artisan storage:link || true; php artisan migrate --force; php artisan config:cache; php artisan route:cache; php artisan view:cache; php artisan serve --host=0.0.0.0 --port=8080"]
