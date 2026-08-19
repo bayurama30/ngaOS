@@ -2,6 +2,18 @@
 
 All notable changes to NgaOS - Islamic Web App will be documented in this file.
 
+## [Unreleased]
+
+### ⚙️ Config Changes
+
+- **AI Provider** - Ganti provider AI chat dari OpenRouter/Gemini ke **Poolside** dengan model `poolside/laguna-s-2.1`
+- **ENV Variables** - Ganti `OPENROUTER_*` → `POOLSIDE_API_KEY`, `POOLSIDE_API_URL` (base URL `https://inference.poolside.ai/v1`), `POOLSIDE_MODEL`
+
+### 🏗️ Architecture Improvements
+
+- **PoolsideChatService** - Ganti `GeminiChatService` dengan `PoolsideChatService` (memakai OpenAI-compatible chat completions API via Poolside inference)
+- **Reasoning Model Support** - Tambah ekstraksi `content ?? reasoning_content ?? fallback` agar respons model berpikir `laguna-s-2.1` tetap mengembalikan jawaban
+
 ## [2.2.0] - 2026-07-28
 
 ### 🔒 Security Fixes

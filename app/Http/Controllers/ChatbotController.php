@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\ChatHistory;
-use App\Services\GeminiChatService;
+use App\Services\PoolsideChatService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class ChatbotController extends Controller
 {
     public function __construct(
-        private GeminiChatService $chatService
+        private PoolsideChatService $chatService
     ) {}
 
     public function index()

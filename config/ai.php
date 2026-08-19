@@ -4,15 +4,15 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | AI Chat Configuration (OpenRouter)
+    | AI Chat Configuration (Poolside)
     |--------------------------------------------------------------------------
     */
 
-    'api_key' => env('OPENROUTER_API_KEY'),
+    'api_key' => env('POOLSIDE_API_KEY'),
 
-    'api_url' => env('OPENROUTER_API_URL', 'https://opencode.ai/zen/v1/chat/completions'),
+    'api_url' => env('POOLSIDE_API_URL', 'https://inference.poolside.ai/v1'),
 
-    'model' => env('OPENROUTER_MODEL', 'deepseek-v4-flash-free'),
+    'model' => env('POOLSIDE_MODEL', 'poolside/laguna-s-2.1'),
 
     'max_tokens' => env('AI_MAX_TOKENS', 2048),
 

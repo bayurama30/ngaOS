@@ -6,7 +6,7 @@ use App\Models\ChatHistory;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class GeminiChatService
+class PoolsideChatService
 {
     private string $apiKey;
 
@@ -42,7 +42,7 @@ class GeminiChatService
                 'Authorization' => "Bearer {$this->apiKey}",
                 'HTTP-Referer' => config('app.url'),
                 'X-Title' => config('app.name'),
-            ])->post($this->apiUrl, [
+            ])->post($this->endpoint(), [
                 'model' => $this->model,
                 'messages' => $messages,
                 'max_tokens' => $this->maxTokens,
@@ -51,7 +51,9 @@ class GeminiChatService
 
             if ($response->successful()) {
                 $data = $response->json();
-                $aiResponse = $data['choices'][0]['message']['content'] ?? 'Maaf, saya tidak dapat memproses pertanyaan Anda saat ini.';
+                $aiResponse = $data['choices'][0]['message']['content']
+                    ?? $data['choices'][0]['message']['reasoning_content']
+                    ?? 'Maaf, saya tidak dapat memproses pertanyaan Anda saat ini.';
 
                 $this->saveHistory($userId, $message, $aiResponse);
 
@@ -75,6 +77,18 @@ class GeminiChatService
 
             return 'Maaf, terjadi kesalahan. Silakan coba lagi nanti.';
         }
+    }
+
+    /**
+     * Build the full chat-completions endpoint.
+     * Accepts either a base URL (e.g. https://inference.poolside.ai/v1)
+     * or a full chat-completions URL.
+     */
+    private function endpoint(): string
+    {
+        $url = rtrim($this->apiUrl, '/');
+
+        return str_ends_with($url, '/chat/completions') ? $url : $url.'/chat/completions';
     }
 
     private function buildMessages(array $history, string $currentMessage): array
