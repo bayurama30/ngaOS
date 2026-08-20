@@ -23,6 +23,13 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        {{-- Alpine.js: powers the x-data / x-init / x-show interactivity (dark-mode
+             toggle, surah list, sidebar widgets). Restored after it was accidentally
+             removed in v2.2.0 (a comment assumed "Livewire loads Alpine", but
+             Livewire does not bundle Alpine). The `defer` cdn build executes
+             after DOM parse and auto-mounts on DOMContentLoaded, by which time
+             the inline <script> component helpers in the body are defined. --}}
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
         @livewireStyles
 
         <style>

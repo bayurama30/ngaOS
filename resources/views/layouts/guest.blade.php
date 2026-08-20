@@ -18,6 +18,10 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        {{-- Alpine.js: powers x-data / x-show interactivity (dark-mode toggle).
+             Restored after it was removed in v2.2.0. `defer` cdn auto-mounts
+             on DOMContentLoaded; inline body helpers are defined before that. --}}
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
         @livewireStyles
 
         <style>

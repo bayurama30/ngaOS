@@ -39,6 +39,10 @@ All notable changes to NgaOS - Islamic Web App will be documented in this file.
 #### Local Development
 - **Ikon besar / halaman tak ter-styling** - `AppServiceProvider` menerapkan `URL::forceRootUrl` Funnel pada *semua* environment termasuk `local`, sehingga CSS/JS di `http://127.0.0.1:8000` menjadi URL Funnel (404) → ikon SVG meletup besar. Fix: `forceRootUrl`/`forceScheme`/trusted-proxies hanya dipasang di environment **non-local** (produksi Funnel tidak terdampak)
 
+#### Frontend Interactivity (Alpine.js widgets "Memuar…")
+
+- **Widget spinner tak pernah selesai ("Memuar surat…")** - Pada v2.2.0 (`cf9c2bb`) tag `<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js">` dihapus dari `layouts/app.blade.php` + `layouts/guest.blade.php`, diganti komentar "Alpine.js (loaded by Livewire)". Padahal **Livewire tidak meng‑bundle Alpine**, jadi tiada engine yang meng‑init `x-data`/`x-init`/`x-show` → `fetch()` widget tidak pernah dipanggil → spinner "Memuar surat…/Memuar doa…" berputar terus, **meski API `/api/muslim/*` (hijri, quran/list, quran/random, hadis/random, city, prayer) semuanya kembali 200**. Deploy `optimize:clear` kemarin *recompile view* dari source tak-ber-Alpine ini (sebelumnya mungkin masih melayani *stale compiled view* lama). Restore CDN Alpine.js (`@3`, `defer` + auto-mount pada DOMContentLoaded, setelah helper `<script>` inline di body terdaftar) ke kedua layout. Verifikasi: `GET /ngaos/` + `/ngaos/login` mengandung tag skrip Alpine, URL CDN `cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js` mengembalikan 200, endpoint widget publik 200. Widget jadwal sholat tetap butuh `city_id` user valid (API eksternal `/sholat/jadwal/<city_id>/today` 404 bila kosong — issue data, bukan Alpine).
+
 ### 🏗️ Architecture Improvements
 
 - **PoolsideChatService** - Ganti `GeminiChatService` dengan `PoolsideChatService` (memakai OpenAI-compatible chat completions API via Poolside inference)
