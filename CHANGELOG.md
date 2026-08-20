@@ -28,6 +28,7 @@ All notable changes to NgaOS - Islamic Web App will be documented in this file.
 #### Local Development
 
 - **localhost `/ngaos` mount mirror** - `php artisan serve` (localhost) tidak punya reverse proxy `/ngaos`, jadi semua `fetch()`/`href` hardcode `/ngaos/*` (termasuk `/ngaos/chatbot/chat`) **404** → chatbot tampil "Maaf, terjadi kesalahan. Silakan coba lagi." dan widget API (hijri, jadwal shalat, doa, ayat) kosong — namun **bukan** exception, jadi tak tercatat di `laravel.log`. Tambah *middleware* global `StripNgaosPrefix` (hanya `APP_ENV=local`) yang strip prefix `/ngaos` **sebelum routing**, memetakan mount Funnel ke localhost. Asset `/build/...` tidak terpengaruh karena `forceRootUrl` sudah di‑gate off di local.
+- **Login redirect ke port 80** - `LoginController::store` menuliskan host `url.intended` ke `config('app.url')` (`http://localhost`, tanpa port) hanya untuk koreksi Funnel; di localhost ini memetakan redirect post-login ke `http://localhost/quran` (port 80, tidak ada server) → *localhost refused to connect*. Lompatkan normalisasi itu di `APP_ENV=local` sehingga post-login mengikuti `url.intended` asli (`http://127.0.0.1:8000/...`). Pakai `app()->environment('local')`, bukan helper global `environment()` yang tidak terdefinisi di namespace controller (sebelumnya bikin login 500).
 - **Header OpenRouter-style** - `HTTP-Referer` + `X-Title` ditolak poolside laguna → dihapus
 - **Combo stack** - `9router-laguna-s-2.1-stack` memicu sticky session + tool injection → pakai single `poolside/poolside/laguna-s-2.1` (verified natural Indonesia)
 
