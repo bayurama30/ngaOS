@@ -39,7 +39,7 @@
                 <p class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed mb-3" x-text="hadis?.text?.id || ''"></p>
                 <div class="flex items-center justify-between">
                     <span class="text-xs text-gray-500 dark:text-gray-400" x-text="hadis?.takhrij || ''"></span>
-                    <a :href="`/hadith/${hadis?.id}`" class="text-teal-600 dark:text-teal-400 text-sm font-medium hover:text-teal-700 dark:hover:text-teal-300">Baca Selengkapnya →</a>
+                    <a :href="`/ngaos/hadith/${hadis?.id}`" class="text-teal-600 dark:text-teal-400 text-sm font-medium hover:text-teal-700 dark:hover:text-teal-300">Baca Selengkapnya →</a>
                 </div>
             </div>
         </div>

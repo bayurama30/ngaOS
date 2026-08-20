@@ -34,7 +34,7 @@
             </div>
             <div class="space-y-3">
                 <template x-for="hadis in results" :key="hadis.id">
-                    <a :href="`/hadith/${hadis.id}`" class="block bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition">
+                    <a :href="`/ngaos/hadith/${hadis.id}`" class="block bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition">
                         <div class="flex items-center justify-between mb-3">
                             <div class="flex items-center space-x-2">
                                 <div class="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center">

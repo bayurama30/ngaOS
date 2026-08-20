@@ -34,7 +34,7 @@
 
         <div x-show="!loading" x-cloak class="space-y-2">
             <template x-for="surah in filteredSurahs" :key="surah.number">
-                <a :href="`/quran/${surah.number}`" class="card-hover flex items-center p-4 group animate-slide-up">
+                <a :href="`/ngaos/quran/${surah.number}`" class="card-hover flex items-center p-4 group animate-slide-up">
                     <div class="w-10 h-10 bg-teal-100 dark:bg-teal-900/30 rounded-lg flex items-center justify-center mr-3 flex-shrink-0 group-hover:scale-110 transition-transform duration-200">
                         <span class="text-teal-700 dark:text-teal-300 font-bold text-sm" x-text="surah.number"></span>
                     </div>

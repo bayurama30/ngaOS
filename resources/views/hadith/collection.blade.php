@@ -62,7 +62,7 @@
             </div>
 
             <template x-for="hadis in hadiths" :key="hadis.id">
-                <a :href="`/hadith/${hadis.id}`" class="block bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition">
+                <a :href="`/ngaos/hadith/${hadis.id}`" class="block bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-sm font-medium text-teal-600" x-text="`Hadis #${hadis.id}`"></span>
                         <span :class="[
