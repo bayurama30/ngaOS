@@ -40,8 +40,6 @@ class PoolsideChatService
             $response = Http::timeout(60)->withHeaders([
                 'Content-Type' => 'application/json',
                 'Authorization' => "Bearer {$this->apiKey}",
-                'HTTP-Referer' => config('app.url'),
-                'X-Title' => config('app.name'),
             ])->post($this->endpoint(), [
                 'model' => $this->model,
                 'messages' => $messages,
@@ -50,7 +48,13 @@ class PoolsideChatService
             ]);
 
             if ($response->successful()) {
-                $data = $response->json();
+                $body = $response->body();
+                // 9Router appends a streaming trailer (`data: [DONE]\n\n`) even on
+                // non-streaming responses, attached directly to the JSON (no newline),
+                // which breaks Laravel's strict json_decode. Strip everything from the
+                // first `data:` marker onward, then decode the JSON we're left with.
+                $jsonPart = preg_replace('/\s*data:(.*)$/s', '', $body);
+                $data = json_decode(trim($jsonPart), true) ?: [];
                 $aiResponse = $data['choices'][0]['message']['content']
                     ?? $data['choices'][0]['message']['reasoning_content']
                     ?? 'Maaf, saya tidak dapat memproses pertanyaan Anda saat ini.';
