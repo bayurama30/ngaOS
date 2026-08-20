@@ -13,7 +13,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Strip the /ngaos Funnel prefix on localhost so the views' hardcoded
+        // /ngaos fetch()/href URLs resolve the same way they do behind the
+        // production reverse proxy (where /ngaos is the mounted root).
+        $middleware->prepend(\App\Http\Middleware\StripNgaosPrefix::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

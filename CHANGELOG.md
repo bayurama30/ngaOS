@@ -24,6 +24,10 @@ All notable changes to NgaOS - Islamic Web App will be documented in this file.
 
 #### AI Chatbot
 - **9Router streaming trailer** - 9Router append `data: [DONE]` langsung pada response non-stream → Laravel strict `json_decode` gagal → fallback "Maaf, tidak dapat memproses". Fix: strip `data:.*$` sebelum decode
+
+#### Local Development
+
+- **localhost `/ngaos` mount mirror** - `php artisan serve` (localhost) tidak punya reverse proxy `/ngaos`, jadi semua `fetch()`/`href` hardcode `/ngaos/*` (termasuk `/ngaos/chatbot/chat`) **404** → chatbot tampil "Maaf, terjadi kesalahan. Silakan coba lagi." dan widget API (hijri, jadwal shalat, doa, ayat) kosong — namun **bukan** exception, jadi tak tercatat di `laravel.log`. Tambah *middleware* global `StripNgaosPrefix` (hanya `APP_ENV=local`) yang strip prefix `/ngaos` **sebelum routing**, memetakan mount Funnel ke localhost. Asset `/build/...` tidak terpengaruh karena `forceRootUrl` sudah di‑gate off di local.
 - **Header OpenRouter-style** - `HTTP-Referer` + `X-Title` ditolak poolside laguna → dihapus
 - **Combo stack** - `9router-laguna-s-2.1-stack` memicu sticky session + tool injection → pakai single `poolside/poolside/laguna-s-2.1` (verified natural Indonesia)
 
