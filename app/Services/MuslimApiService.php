@@ -20,7 +20,11 @@ class MuslimApiService
 
     public function get(string $endpoint, array $query = []): ?array
     {
-        $cacheKey = 'muslim:'.$endpoint.'?'.http_build_query($query);
+        // Variant-randomization params (`t=Date.now()`, `_=...`) break file
+        // caching because each request builds a unique cache key. Strip them
+        // from the cache key only (the real upstream URL still gets them).
+        $cacheQuery = array_filter($query, fn ($k) => ! in_array($k, ['t', '_', 'ts'], true), ARRAY_FILTER_USE_KEY);
+        $cacheKey = 'muslim:'.$endpoint.'?'.http_build_query($cacheQuery);
 
         return Cache::remember($cacheKey, $this->cacheTtl, function () use ($endpoint, $query) {
             try {
