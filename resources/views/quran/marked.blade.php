@@ -115,7 +115,7 @@
                                     }
                                 } else {
                                     try {
-                                        const resp = await fetch(`/api/muslim/quran/surah/${surahNum}`);
+                                        const resp = await fetch(`/ngaos/api/muslim/quran/surah/${surahNum}`);
                                         const data = await resp.json();
                                         if (data) {
                                             surahCache[surahNum] = {

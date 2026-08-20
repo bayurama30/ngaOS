@@ -215,7 +215,7 @@
                         for (const keyword of keywords) {
                             if (!keyword || keyword.length < 3) continue;
 
-                            const response = await fetch(`/api/muslim/city/search?q=${encodeURIComponent(keyword)}`);
+                            const response = await fetch(`/ngaos/api/muslim/city/search?q=${encodeURIComponent(keyword)}`);
                             const data = await response.json();
 
                             if (Array.isArray(data) && data.length > 0) {
@@ -248,7 +248,7 @@
 
                     this.searching = true;
                     try {
-                        const response = await fetch(`/api/muslim/city/search?q=${encodeURIComponent(this.citySearch)}`);
+                        const response = await fetch(`/ngaos/api/muslim/city/search?q=${encodeURIComponent(this.citySearch)}`);
                         const data = await response.json();
                         this.searchResults = Array.isArray(data) ? data : [];
                     } catch (error) {

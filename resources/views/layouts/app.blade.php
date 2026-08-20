@@ -344,7 +344,7 @@
                             const cityId = '{{ auth()->user()->city_id ?? "" }}';
                             const tz = '{{ auth()->user()->timezone ?? "Asia/Jakarta" }}';
                             if (!cityId) return;
-                            const res = await fetch(`/api/muslim/prayer?city_id=${cityId}&tz=${tz}`);
+                            const res = await fetch(`/ngaos/api/muslim/prayer?city_id=${cityId}&tz=${tz}`);
                             const data = await res.json();
                             if (data?.jadwal) {
                                 const now = new Date();
@@ -380,7 +380,7 @@
                     verse: null,
                     async load() {
                         try {
-                            const res = await fetch(`/api/muslim/quran/random?t=${Date.now()}`);
+                            const res = await fetch(`/ngaos/api/muslim/quran/random?t=${Date.now()}`);
                             const data = await res.json();
                             if (data) {
                                 this.verse = {
@@ -399,7 +399,7 @@
                     hadith: null,
                     async load() {
                         try {
-                            const res = await fetch(`/api/muslim/hadis/random?t=${Date.now()}`);
+                            const res = await fetch(`/ngaos/api/muslim/hadis/random?t=${Date.now()}`);
                             const data = await res.json();
                             if (data) {
                                 this.hadith = {

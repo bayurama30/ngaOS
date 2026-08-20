@@ -64,7 +64,7 @@
 
                 async loadSurahs() {
                     try {
-                        const response = await fetch('/api/muslim/quran/list');
+                        const response = await fetch('/ngaos/api/muslim/quran/list');
                         const data = await response.json();
                         this.surahs = Array.isArray(data) ? data : [];
                     } catch (error) {

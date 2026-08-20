@@ -108,7 +108,7 @@
                     this.loading = true;
                     this.searched = true;
                     try {
-                        const response = await fetch(`/api/muslim/hadis/search?q=${encodeURIComponent(this.query)}`);
+                        const response = await fetch(`/ngaos/api/muslim/hadis/search?q=${encodeURIComponent(this.query)}`);
                         const data = await response.json();
                         this.results = data?.hadis || [];
                     } catch (error) {

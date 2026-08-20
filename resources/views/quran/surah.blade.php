@@ -577,7 +577,7 @@
 
                 async loadSurah() {
                     try {
-                        const response = await fetch(`/api/muslim/quran/surah/${this.currentSurahNumber}`);
+                        const response = await fetch(`/ngaos/api/muslim/quran/surah/${this.currentSurahNumber}`);
                         const data = await response.json();
                         if (data) {
                             this.surah = data;
@@ -633,7 +633,7 @@
                             return;
                         }
 
-                        const response = await fetch(`/api/muslim/quran/surah/${number}`);
+                        const response = await fetch(`/ngaos/api/muslim/quran/surah/${number}`);
                         const data = await response.json();
                         if (data) {
                             if (type === 'next') this.nextSurahName = data.name_latin;
@@ -658,7 +658,7 @@
                     }
 
                     try {
-                        const response = await fetch(`/api/muslim/quran/surah/${nextNumber}`);
+                        const response = await fetch(`/ngaos/api/muslim/quran/surah/${nextNumber}`);
                         const data = await response.json();
                         
                         if (data && data.ayahs) {

@@ -107,7 +107,7 @@
                 async loadHistory() {
                     try {
                         const timestamp = new Date().getTime();
-                        const response = await fetch(`/chatbot/history?t=${timestamp}`, {
+                        const response = await fetch(`/ngaos/chatbot/history?t=${timestamp}`, {
                             credentials: 'same-origin',
                             headers: {
                                 'Accept': 'application/json',
@@ -154,7 +154,7 @@
                     this.scrollToBottom();
 
                     try {
-                        const response = await fetch('/chatbot/chat', {
+                        const response = await fetch('/ngaos/chatbot/chat', {
                             method: 'POST',
                             credentials: 'same-origin',
                             headers: {
@@ -196,7 +196,7 @@
                     if (!confirm('Hapus semua percakapan?')) return;
 
                     try {
-                        const response = await fetch('/chatbot/history', {
+                        const response = await fetch('/ngaos/chatbot/history', {
                             method: 'DELETE',
                             credentials: 'same-origin',
                             headers: {

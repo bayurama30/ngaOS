@@ -63,7 +63,7 @@
                 async loadHadith() {
                     this.loading = true;
                     try {
-                        const response = await fetch(`/api/muslim/hadis/${this.hadithId}`);
+                        const response = await fetch(`/ngaos/api/muslim/hadis/${this.hadithId}`);
                         this.hadith = await response.json();
                     } catch (error) {
                         console.error('Error loading hadith:', error);

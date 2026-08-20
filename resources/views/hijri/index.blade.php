@@ -223,7 +223,7 @@
 
                 async loadToday() {
                     try {
-                        const res = await fetch('/api/hijri/today');
+                        const res = await fetch('/ngaos/api/hijri/today');
                         const data = await res.json();
                         if (data?.hijr) {
                             this.todayHijri = data.hijr.today || '';
@@ -243,7 +243,7 @@
                         const month = this.calendarType === 'hijri' ? this.currentHijriMonth : this.currentMonth;
                         const year = this.calendarType === 'hijri' ? this.currentHijriYear : this.currentYear;
 
-                        const res = await fetch(`/api/hijri/calendar?month=${month}&year=${year}&type=${this.calendarType}`);
+                        const res = await fetch(`/ngaos/api/hijri/calendar?month=${month}&year=${year}&type=${this.calendarType}`);
                         const data = await res.json();
 
                         if (data?.success) {
@@ -308,7 +308,7 @@
                     if (this.calendarType === 'hijri') {
                         // For Hijri view, we need to find which Hijri month contains today
                         // Load Masehi calendar for current month to get today's Hijri date
-                        fetch(`/api/hijri/calendar?month=${now.getMonth() + 1}&year=${now.getFullYear()}&type=masehi`)
+                        fetch(`/ngaos/api/hijri/calendar?month=${now.getMonth() + 1}&year=${now.getFullYear()}&type=masehi`)
                             .then(res => res.json())
                             .then(data => {
                                 if (data?.success && data.days) {
@@ -332,7 +332,7 @@
                     this.loadingConvert = true;
                     this.convertResult = null;
                     try {
-                        const res = await fetch(`/api/hijri/convert?type=${this.convertType}&day=${this.convertDay}&month=${this.convertMonth}&year=${this.convertYear}`);
+                        const res = await fetch(`/ngaos/api/hijri/convert?type=${this.convertType}&day=${this.convertDay}&month=${this.convertMonth}&year=${this.convertYear}`);
                         const data = await res.json();
                         if (data?.success) {
                             this.convertResult = data.result;
@@ -345,7 +345,7 @@
 
                 async loadHolidays() {
                     try {
-                        const res = await fetch('/api/hijri/holidays');
+                        const res = await fetch('/ngaos/api/hijri/holidays');
                         const data = await res.json();
                         this.holidays = Array.isArray(data) ? data : [];
                     } catch (e) {

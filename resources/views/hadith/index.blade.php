@@ -75,7 +75,7 @@
                 async loadHadis() {
                     this.loading = true;
                     try {
-                        const response = await fetch(`/api/muslim/hadis/random?t=${Date.now()}`);
+                        const response = await fetch(`/ngaos/api/muslim/hadis/random?t=${Date.now()}`);
                         this.hadis = await response.json();
                     } catch (error) {
                         console.error('Error loading hadis:', error);

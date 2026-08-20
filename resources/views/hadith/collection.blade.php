@@ -100,7 +100,7 @@
                 async loadHadiths() {
                     this.loading = true;
                     try {
-                        const response = await fetch(`/api/muslim/hadis/mukharrij/${key}?page=${this.currentPage}&limit=10`);
+                        const response = await fetch(`/ngaos/api/muslim/hadis/mukharrij/${key}?page=${this.currentPage}&limit=10`);
                         const data = await response.json();
                         this.hadiths = data.hadis || [];
                         this.paging = data.paging || {};

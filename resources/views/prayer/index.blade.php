@@ -146,7 +146,7 @@
                     this.error = null;
 
                     try {
-                        const response = await fetch(`/api/muslim/prayer?city_id=${this.cityId}&tz={{ auth()->user()->timezone ?? "Asia/Jakarta" }}`);
+                        const response = await fetch(`/ngaos/api/muslim/prayer?city_id=${this.cityId}&tz={{ auth()->user()->timezone ?? "Asia/Jakarta" }}`);
                         const data = await response.json();
 
                         if (data?.jadwal) {

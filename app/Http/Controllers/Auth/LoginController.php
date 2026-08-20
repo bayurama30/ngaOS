@@ -39,6 +39,20 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
+        // Laravel is mounted under the /ngaos sub-path behind the Funnel
+        // reverse proxy. The session's "url.intended" is captured by the auth
+        // middleware from the proxied request (http://127.0.0.1:8082/<path>)
+        // so it lacks both the correct scheme and the /ngaos prefix. Normalise
+        // it so post-login redirect lands on the right sub-path, otherwise
+        // users get bounced to the root path (404) e.g. /quran instead of
+        // /ngaos/quran. route('dashboard') is the fallback when absent.
+        $root = rtrim(config('app.url'), '/');
+        $intended = session('url.intended');
+        if (is_string($intended) && $intended !== '') {
+            $intended = preg_replace('#^https?://[^/]+#', $root, $intended);
+            session(['url.intended' => $intended]);
+        }
+
         return redirect()->intended(route('dashboard'));
     }
 

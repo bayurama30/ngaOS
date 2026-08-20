@@ -144,7 +144,7 @@
                 hijri: {},
                 async loadHijriDate() {
                     try {
-                        const response = await fetch('/api/muslim/hijri/today');
+                        const response = await fetch('/ngaos/api/muslim/hijri/today');
                         const data = await response.json();
                         if (data) {
                             this.hijri = {
@@ -202,7 +202,7 @@
                             for (const keyword of keywords) {
                                 if (!keyword || keyword.length < 3) continue;
                                 
-                                const cityResponse = await fetch(`/api/muslim/city/search?q=${encodeURIComponent(keyword)}`);
+                                const cityResponse = await fetch(`/ngaos/api/muslim/city/search?q=${encodeURIComponent(keyword)}`);
                                 const cityData = await cityResponse.json();
 
                                 if (Array.isArray(cityData) && cityData.length > 0) {
@@ -248,7 +248,7 @@
 
                 async fetchPrayerTimes(cityId, tz) {
                     try {
-                        const response = await fetch(`/api/muslim/prayer?city_id=${cityId}&tz=${tz}`);
+                        const response = await fetch(`/ngaos/api/muslim/prayer?city_id=${cityId}&tz=${tz}`);
                         const data = await response.json();
                         if (data?.jadwal) {
                             this.location = data.kabko || 'Indonesia';
@@ -298,7 +298,7 @@
                 async loadHadis() {
                     this.loading = true;
                     try {
-                        const response = await fetch(`/api/muslim/hadis/random?t=${Date.now()}`);
+                        const response = await fetch(`/ngaos/api/muslim/hadis/random?t=${Date.now()}`);
                         if (!response.ok) throw new Error('API error');
                         const data = await response.json();
                         if (data && (data.text?.id || data.id)) {
@@ -326,7 +326,7 @@
                 async loadVerse() {
                     this.loading = true;
                     try {
-                        const response = await fetch(`/api/muslim/quran/random?t=${Date.now()}`);
+                        const response = await fetch(`/ngaos/api/muslim/quran/random?t=${Date.now()}`);
                         if (!response.ok) throw new Error('API error');
                         const data = await response.json();
                         if (data && (data.arab || data.teks_arab)) {

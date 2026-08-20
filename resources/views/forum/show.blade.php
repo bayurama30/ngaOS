@@ -78,7 +78,7 @@
 
                 async toggleLike() {
                     try {
-                        const response = await fetch(`/forum/${postId}/like`, {
+                        const response = await fetch(`/ngaos/forum/${postId}/like`, {
                             method: 'POST',
                             headers: {
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
