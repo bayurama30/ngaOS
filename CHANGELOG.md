@@ -4,10 +4,32 @@ All notable changes to NgaOS - Islamic Web App will be documented in this file.
 
 ## [Unreleased]
 
+### 🚀 Deployment (Tailscale Funnel sub-path `/ngaos`)
+
+- **Sub-path /ngaos** - Aplikasi di-deploy di `https://web.tail625365.ts.net/ngaos` via Tailscale Funnel (bukan root domain)
+- **Infra: nginx + php-fpm** - Ganti `php artisan serve` (single-thread, request antri → "data lama ter-load") dengan nginx (127.0.0.1:8082) + PHP-FPM pool `ngaos` (multi-worker)
+- **HTTPS di balik proxy** - `URL::forceRootUrl` + `forceScheme('https')` + trusted proxies di AppServiceProvider (Funnel terminate TLS)
+- **Login redirect fix** - Normalisasi `session url.intended` ke prefix `/ngaos` supaya setelah login kembali ke `/ngaos/quran` (bukan `/quran` 404)
+- **Rute hardcode fix** - Prefix semua link navigasi internal (`/quran/...`, `/hadith/...`) dan `fetch()` JS ke `/ngaos/...`
+- **Asset sub-path** - Symlink `public/ngaos → .` agar Vite manifest resolve di `/ngaos/build/`
+
 ### ⚙️ Config Changes
 
-- **AI Provider** - Ganti provider AI chat dari OpenRouter/Gemini ke **Poolside** dengan model `poolside/laguna-s-2.1`
-- **ENV Variables** - Ganti `OPENROUTER_*` → `POOLSIDE_API_KEY`, `POOLSIDE_API_URL` (base URL `https://inference.poolside.ai/v1`), `POOLSIDE_MODEL`
+- **AI Provider** - Ganti provider AI chat dari OpenRouter/Gemini ke **Poolside** dengan model `poolside/laguna-s-2.1` (via 9Router gateway lokal `http://localhost:20128/v1`)
+- **ENV Variables** - Ganti `OPENROUTER_*` → `POOLSIDE_API_KEY`, `POOLSIDE_API_URL`, `POOLSIDE_MODEL`
+- **Cache/Queue** - `CACHE_STORE=file` + `QUEUE_CONNECTION=sync` (hindari SQLite lock pada single-worker)
+- **SELinux** - `http_port_t` untuk port 8082/9001, httpd booleans, chcon rw_content pada database/storage
+
+### 🐛 Bug Fixes
+
+#### AI Chatbot
+- **9Router streaming trailer** - 9Router append `data: [DONE]` langsung pada response non-stream → Laravel strict `json_decode` gagal → fallback "Maaf, tidak dapat memproses". Fix: strip `data:.*$` sebelum decode
+- **Header OpenRouter-style** - `HTTP-Referer` + `X-Title` ditolak poolside laguna → dihapus
+- **Combo stack** - `9router-laguna-s-2.1-stack` memicu sticky session + tool injection → pakai single `poolside/poolside/laguna-s-2.1` (verified natural Indonesia)
+
+#### Performa
+- **Cache key uniqe** - Query param `?t=Date.now()` bikin cache key selalu beda → API eksternal di-fetch tiap load → strip `t/_/ts` dari cache key (upstream tetap dapat param)
+- **Database SQLite lock** - Cache/queue/session semua ke SQLite → contention → pindah ke file cache + sync queue
 
 ### 🏗️ Architecture Improvements
 
