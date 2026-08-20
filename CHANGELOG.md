@@ -31,6 +31,9 @@ All notable changes to NgaOS - Islamic Web App will be documented in this file.
 - **Cache key uniqe** - Query param `?t=Date.now()` bikin cache key selalu beda → API eksternal di-fetch tiap load → strip `t/_/ts` dari cache key (upstream tetap dapat param)
 - **Database SQLite lock** - Cache/queue/session semua ke SQLite → contention → pindah ke file cache + sync queue
 
+#### Local Development
+- **Ikon besar / halaman tak ter-styling** - `AppServiceProvider` menerapkan `URL::forceRootUrl` Funnel pada *semua* environment termasuk `local`, sehingga CSS/JS di `http://127.0.0.1:8000` menjadi URL Funnel (404) → ikon SVG meletup besar. Fix: `forceRootUrl`/`forceScheme`/trusted-proxies hanya dipasang di environment **non-local** (produksi Funnel tidak terdampak)
+
 ### 🏗️ Architecture Improvements
 
 - **PoolsideChatService** - Ganti `GeminiChatService` dengan `PoolsideChatService` (memakai OpenAI-compatible chat completions API via Poolside inference)
